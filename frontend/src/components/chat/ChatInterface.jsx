@@ -1,22 +1,23 @@
-import { useState, useRef, useEffect } from 'react';
-import { Send, Loader, User, Bot, Image, Paperclip } from 'lucide-react';
-import { useChat } from '../../context/ChatContext';
-import { useAuth } from '../../context/AuthContext';
-import { format } from 'date-fns';
+import { useState, useRef, useEffect, useCallback, memo } from "react";
+import { Send, Loader, User, Bot, Image, Paperclip } from "lucide-react";
+import { useChat } from "../../context/ChatContext";
+import { useAuth } from "../../context/AuthContext";
+import { format } from "date-fns";
 
 const ChatInterface = () => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
-  
-  const { 
-    currentThread, 
-    messages, 
-    sendMessage, 
-    isStreaming, 
+
+  const {
+    currentThread,
+    messages,
+    sendMessage,
+    isStreaming,
+    isThinking,
     streamingMessage,
-    loadMessages 
+    loadMessages,
   } = useChat();
   const { user } = useAuth();
 
@@ -28,64 +29,75 @@ const ChatInterface = () => {
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + "px";
     }
   }, [message]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!message.trim() || isStreaming) return;
-
-    const userMessage = message.trim();
-    setMessage('');
-    setIsTyping(true);
-
-    try {
-      await sendMessage(currentThread._id, userMessage);
-    } catch (error) {
-      console.error('Error sending message:', error);
-    } finally {
-      setIsTyping(false);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  const handleSubmit = useCallback(
+    async (e) => {
       e.preventDefault();
-      handleSubmit(e);
-    }
-  };
+      if (!message.trim() || isStreaming) return;
+
+      const userMessage = message.trim();
+      setMessage("");
+      setIsTyping(true);
+
+      try {
+        await sendMessage(currentThread?._id, userMessage);
+      } catch (error) {
+        console.error("Error sending message:", error);
+      } finally {
+        setIsTyping(false);
+      }
+    },
+    [message, isStreaming, sendMessage, currentThread?._id]
+  );
+
+  const handleKeyPress = useCallback(
+    (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit(e);
+      }
+    },
+    [handleSubmit]
+  );
 
   const formatTime = (date) => {
-    return format(new Date(date), 'HH:mm');
+    return format(new Date(date), "HH:mm");
   };
 
   const formatDate = (date) => {
-    return format(new Date(date), 'MMM dd, yyyy');
+    return format(new Date(date), "MMM dd, yyyy");
   };
 
   const renderMessage = (msg, index) => {
-    const isUser = msg.role === 'user';
-    const isAssistant = msg.role === 'assistant';
-    
+    const isUser = msg.role === "user";
+    const isAssistant = msg.role === "assistant";
+
     return (
       <div
         key={msg._id || index}
-        className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}
+        className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}
       >
-        <div className={`flex max-w-xs lg:max-w-md ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+        <div
+          className={`flex max-w-xs lg:max-w-md ${
+            isUser ? "flex-row-reverse" : "flex-row"
+          }`}
+        >
           {/* Avatar */}
-          <div className={`flex-shrink-0 ${isUser ? 'ml-2' : 'mr-2'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              isUser 
-                ? 'bg-green-600 text-white' 
-                : 'bg-blue-600 text-white'
-            }`}>
+          <div className={`flex-shrink-0 ${isUser ? "ml-2" : "mr-2"}`}>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                isUser ? "bg-green-600 text-white" : "bg-blue-600 text-white"
+              }`}
+            >
               {isUser ? (
                 <User className="w-4 h-4" />
               ) : (
@@ -95,19 +107,21 @@ const ChatInterface = () => {
           </div>
 
           {/* Message Content */}
-          <div className={`px-4 py-2 rounded-lg ${
-            isUser 
-              ? 'bg-green-600 text-white' 
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'
-          }`}>
+          <div
+            className={`px-4 py-2 rounded-lg ${
+              isUser
+                ? "bg-green-600 text-white"
+                : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+            }`}
+          >
             <div className="text-sm whitespace-pre-wrap break-words">
               {msg.content}
             </div>
-            <div className={`text-xs mt-1 ${
-              isUser 
-                ? 'text-green-100' 
-                : 'text-gray-500 dark:text-gray-400'
-            }`}>
+            <div
+              className={`text-xs mt-1 ${
+                isUser ? "text-green-100" : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
               {formatTime(msg.createdOn)}
             </div>
           </div>
@@ -129,14 +143,16 @@ const ChatInterface = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col h-96">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col h-[70lvh]">
       {/* Chat Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
           {currentThread.title}
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          {currentThread.category?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          {currentThread.category
+            ?.replace("_", " ")
+            .replace(/\b\w/g, (l) => l.toUpperCase())}
         </p>
       </div>
 
@@ -147,13 +163,43 @@ const ChatInterface = () => {
             <Bot className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
             <p>Start the conversation by asking a question!</p>
             <p className="text-sm mt-2">
-              I'm here to help with farming advice, pest management, weather guidance, and more.
+              I'm here to help with farming advice, pest management, weather
+              guidance, and more.
             </p>
           </div>
         ) : (
           <>
             {messages.map((msg, index) => renderMessage(msg, index))}
-            
+
+            {/* Thinking Indicator */}
+            {isThinking && !streamingMessage && (
+              <div className="flex justify-start mb-4">
+                <div className="flex max-w-xs lg:max-w-md">
+                  <div className="flex-shrink-0 mr-2">
+                    <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                      <Bot className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <div className="text-sm flex items-center space-x-2">
+                      <span>Krishi Officer is thinking</span>
+                      <div className="flex space-x-1">
+                        <div className="w-1 h-1 bg-blue-600 rounded-full animate-bounce" />
+                        <div
+                          className="w-1 h-1 bg-blue-600 rounded-full animate-bounce"
+                          style={{ animationDelay: "0.1s" }}
+                        />
+                        <div
+                          className="w-1 h-1 bg-blue-600 rounded-full animate-bounce"
+                          style={{ animationDelay: "0.2s" }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Streaming Message */}
             {isStreaming && streamingMessage && (
               <div className="flex justify-start mb-4">
@@ -185,8 +231,14 @@ const ChatInterface = () => {
                   <div className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                      <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                      <div
+                        className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.1s" }}
+                      />
+                      <div
+                        className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -224,7 +276,7 @@ const ChatInterface = () => {
               ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               placeholder="Ask about farming, pests, weather, or anything agricultural..."
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none min-h-[40px] max-h-32"
               rows={1}
@@ -255,4 +307,4 @@ const ChatInterface = () => {
   );
 };
 
-export default ChatInterface;
+export default memo(ChatInterface);

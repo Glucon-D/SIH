@@ -90,6 +90,9 @@ io.on("connection", (socket) => {
   socket.on("join_thread", (threadId) => {
     socket.join(threadId);
     logger.info(`User ${socket.id} joined thread ${threadId}`);
+
+    // Confirm join to client
+    socket.emit("thread_joined", { threadId });
   });
 
   socket.on("leave_thread", (threadId) => {
