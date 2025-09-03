@@ -1,17 +1,17 @@
-import { apiService } from './api';
+import { apiService } from "./api";
 
 export const chatService = {
   // Get threads
   getThreads: async (filters = {}) => {
     try {
       const params = new URLSearchParams();
-      
-      Object.keys(filters).forEach(key => {
+
+      Object.keys(filters).forEach((key) => {
         if (filters[key] !== undefined && filters[key] !== null) {
           params.append(key, filters[key]);
         }
       });
-      
+
       const response = await apiService.get(`/threads?${params.toString()}`);
       return response.data;
     } catch (error) {
@@ -22,7 +22,7 @@ export const chatService = {
   // Create new thread
   createThread: async (threadData) => {
     try {
-      const response = await apiService.post('/threads', threadData);
+      const response = await apiService.post("/threads", threadData);
       return response.data;
     } catch (error) {
       throw error;
@@ -63,11 +63,13 @@ export const chatService = {
   getChatHistory: async (threadId, options = {}) => {
     try {
       const params = new URLSearchParams();
-      
-      if (options.page) params.append('page', options.page);
-      if (options.limit) params.append('limit', options.limit);
-      
-      const response = await apiService.get(`/chat/history/${threadId}?${params.toString()}`);
+
+      if (options.page) params.append("page", options.page);
+      if (options.limit) params.append("limit", options.limit);
+
+      const response = await apiService.get(
+        `/chat/history/${threadId}?${params.toString()}`
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -77,7 +79,7 @@ export const chatService = {
   // Send message
   sendMessage: async (messageData) => {
     try {
-      const response = await apiService.post('/chat/send', messageData);
+      const response = await apiService.post("/chat/send", messageData);
       return response.data;
     } catch (error) {
       throw error;
@@ -87,29 +89,39 @@ export const chatService = {
   // Stream chat (for AI responses)
   streamChat: async (chatData) => {
     try {
+      // Debug logging
+      console.log("Sending chat data:", chatData);
+
       // For streaming, we'll use fetch directly to handle the stream
       const token = localStorage.getItem(
-        import.meta.env.VITE_JWT_STORAGE_KEY || 'dko_auth_token'
+        import.meta.env.VITE_JWT_STORAGE_KEY || "dko_auth_token"
       );
-      
+
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/chat/stream`,
+        `${
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:5010/api"
+        }/chat/stream`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(chatData),
         }
       );
-      
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Stream chat error response:", errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
+      // The response will be handled by socket events, but we still return it
+      // for compatibility and potential future use
       return response;
     } catch (error) {
+      console.error("Stream chat error:", error);
       throw error;
     }
   },
@@ -117,7 +129,9 @@ export const chatService = {
   // Edit message
   editMessage: async (messageId, content) => {
     try {
-      const response = await apiService.put(`/chat/message/${messageId}`, { content });
+      const response = await apiService.put(`/chat/message/${messageId}`, {
+        content,
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -137,9 +151,12 @@ export const chatService = {
   // Add reaction to message
   addReaction: async (messageId, reactionType) => {
     try {
-      const response = await apiService.post(`/chat/message/${messageId}/reaction`, {
-        type: reactionType
-      });
+      const response = await apiService.post(
+        `/chat/message/${messageId}/reaction`,
+        {
+          type: reactionType,
+        }
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -149,7 +166,9 @@ export const chatService = {
   // Remove reaction from message
   removeReaction: async (messageId) => {
     try {
-      const response = await apiService.delete(`/chat/message/${messageId}/reaction`);
+      const response = await apiService.delete(
+        `/chat/message/${messageId}/reaction`
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -159,7 +178,10 @@ export const chatService = {
   // Add feedback to thread
   addFeedback: async (threadId, feedbackData) => {
     try {
-      const response = await apiService.post(`/threads/${threadId}/feedback`, feedbackData);
+      const response = await apiService.post(
+        `/threads/${threadId}/feedback`,
+        feedbackData
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -170,11 +192,13 @@ export const chatService = {
   getThreadMessages: async (threadId, options = {}) => {
     try {
       const params = new URLSearchParams();
-      
-      if (options.page) params.append('page', options.page);
-      if (options.limit) params.append('limit', options.limit);
-      
-      const response = await apiService.get(`/threads/${threadId}/messages?${params.toString()}`);
+
+      if (options.page) params.append("page", options.page);
+      if (options.limit) params.append("limit", options.limit);
+
+      const response = await apiService.get(
+        `/threads/${threadId}/messages?${params.toString()}`
+      );
       return response.data;
     } catch (error) {
       throw error;
