@@ -57,19 +57,23 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-lg border-b border-gray-200/50 dark:border-gray-700/50">
+    <nav className="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-2xl shadow-lg border-b border-gray-200/30 dark:border-gray-700/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold text-green-600 dark:text-green-400">
-              Digital Krishi Officer
+        <div className="relative flex items-center justify-between h-16">
+          {/* Left Section - Logo */}
+          <div className="flex items-center lg:w-1/3">
+            <Link 
+              to="/" 
+              className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors duration-300 tracking-tight"
+            >
+              <span className="hidden sm:inline">Digital Krishi Officer</span>
+              <span className="sm:hidden">DKO</span>
             </Link>
           </div>
 
-          {/* Enhanced Desktop Navigation */}
-          {!isAuthenticated && (
-            <div className="hidden md:flex items-center space-x-8">
+          {/* Center Section - Navigation Links (Desktop Only) - Absolutely centered */}
+          <div className="hidden lg:flex absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <div className="flex items-center space-x-1 bg-gray-50/80 dark:bg-gray-800/80 rounded-2xl p-1.5 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
               {navLinks.map((link) => {
                 if (!link.public && !isAuthenticated) return null;
                 
@@ -77,42 +81,55 @@ const Navbar = () => {
                   <Link
                     key={link.path}
                     to={link.path}
-                    className={`relative px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                    className={`relative px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 group overflow-hidden ${
                       isActivePath(link.path)
-                        ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 shadow-sm'
-                        : 'text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50/50 dark:hover:bg-gray-800/50'
+                        ? 'text-white bg-gradient-to-r from-green-600 to-green-700 shadow-lg shadow-green-500/25'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-white/60 dark:hover:bg-gray-700/60'
                     }`}
                   >
-                    <span className="relative z-10">{link.label}</span>
-                    {/* Hover effect background */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                    <span className="relative z-10 flex items-center">
+                      {link.label}
+                      {/* Modern active indicator */}
+                      {isActivePath(link.path) && (
+                        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-white rounded-full animate-pulse"></div>
+                      )}
+                    </span>
+                    
+                    {/* Animated hover background */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 scale-95 group-hover:scale-100"></div>
+                    
+                    {/* Modern underline animation */}
+                    <div className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-500 to-blue-500 transform origin-left transition-transform duration-300 ${
+                      isActivePath(link.path) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                    }`}></div>
                   </Link>
                 );
               })}
             </div>
-          )}
+          </div>
 
-          {/* Right side buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            {/* Theme toggle */}
+          {/* Right Section - Actions */}
+          <div className="flex items-center justify-end space-x-3 lg:w-1/3">
+            {/* Modern Theme toggle - Hidden on mobile to save space */}
             <button
               onClick={toggleTheme}
-              className="relative p-2.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/70 transition-all duration-300 group overflow-hidden"
+              className="hidden sm:flex relative p-3 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 bg-gray-100/60 dark:bg-gray-800/60 hover:bg-gray-200/80 dark:hover:bg-gray-700/80 transition-all duration-300 group overflow-hidden backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50"
               aria-label="Toggle theme"
             >
-              <div className="relative z-10">
+              <div className="relative z-10 transform group-hover:scale-110 transition-transform duration-300">
                 {effectiveTheme === 'dark' ? (
-                  <Sun className="w-5 h-5 rotate-0 group-hover:rotate-90 transition-transform duration-300" />
+                  <Sun className="w-5 h-5 rotate-0 group-hover:rotate-180 transition-transform duration-500 text-yellow-500" />
                 ) : (
-                  <Moon className="w-5 h-5 rotate-0 group-hover:-rotate-12 transition-transform duration-300" />
+                  <Moon className="w-5 h-5 rotate-0 group-hover:-rotate-12 transition-transform duration-300 text-indigo-600" />
                 )}
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+              {/* Modern glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl blur-xl"></div>
             </button>
 
             {isAuthenticated ? (
               /* User avatar and menu dropdown container */
-              <div className="relative" ref={profileMenuRef}>
+              <div className="hidden lg:block relative" ref={profileMenuRef}>
                 <button
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                   className="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-100/70 dark:hover:bg-gray-800/70 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 group"
@@ -222,84 +239,112 @@ const Navbar = () => {
                 )}
               </div>
             ) : (
-              /* Enhanced Auth buttons */
-              <div className="flex items-center space-x-3">
+              /* Modern Auth buttons - Hidden on mobile */
+              <div className="hidden lg:flex items-center space-x-2">
                 <Link
                   to="/login"
-                  className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl transition-all duration-200 border border-transparent hover:border-green-200 dark:hover:border-green-800"
+                  className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-100/60 dark:hover:bg-gray-800/60 rounded-xl transition-all duration-300 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-xl"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/signup"
-                  className="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="relative px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-xl shadow-lg hover:shadow-xl hover:shadow-green-500/25 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden group"
                 >
-                  Get Started
+                  <span className="relative z-10">Get Started</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                 </Link>
               </div>
             )}
-          </div>
 
-          {/* Enhanced Mobile menu button */}
-          <div className="md:hidden">
+            {/* Modern Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="relative p-2.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/70 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 group"
+              className="lg:hidden relative p-3 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 bg-gray-100/60 dark:bg-gray-800/60 hover:bg-gray-200/80 dark:hover:bg-gray-700/80 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 group backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50"
               aria-label="Toggle mobile menu"
             >
-              <div className="relative z-10 transform transition-transform duration-200 group-hover:scale-110">
+              <div className="relative z-10 transform transition-all duration-300 group-hover:scale-110">
                 {isMenuOpen ? (
-                  <X className="w-6 h-6" />
+                  <X className="w-6 h-6 rotate-0 group-hover:rotate-90 transition-transform duration-300" />
                 ) : (
-                  <Menu className="w-6 h-6" />
+                  <Menu className="w-6 h-6 group-hover:rotate-180 transition-transform duration-300" />
                 )}
               </div>
-              {/* Subtle background effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+              {/* Modern glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
             </button>
           </div>
         </div>
 
-        {/* Enhanced Mobile menu */}
+        {/* Modern Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-4 pt-4 pb-6 space-y-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 shadow-xl">
-              {!isAuthenticated && navLinks.map((link) => {
-                if (!link.public && !isAuthenticated) return null;
-                
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className={`flex items-center px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
-                      isActivePath(link.path)
-                        ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 shadow-sm'
-                        : 'text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
+          <div className="lg:hidden animate-in slide-in-from-top-2 duration-300">
+            <div className="px-4 pt-4 pb-6 space-y-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border-t border-gray-200/50 dark:border-gray-700/50 shadow-2xl">
+              
+              {/* Mobile Navigation Links */}
+              <div className="space-y-2">
+                {navLinks.map((link) => {
+                  if (!link.public && !isAuthenticated) return null;
+                  
+                  return (
+                    <Link
+                      key={link.path}
+                      to={link.path}
+                      className={`flex items-center px-4 py-4 rounded-2xl text-base font-medium transition-all duration-300 group ${
+                        isActivePath(link.path)
+                          ? 'text-white bg-gradient-to-r from-green-600 to-green-700 shadow-lg shadow-green-500/25'
+                          : 'text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80'
+                      }`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <span className="relative">
+                        {link.label}
+                        {isActivePath(link.path) && (
+                          <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-white/50 rounded-full"></div>
+                        )}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
 
-              {/* Enhanced Mobile theme toggle */}
+              {/* Modern Mobile theme toggle */}
               <button
                 onClick={toggleTheme}
-                className="flex items-center w-full px-4 py-3 rounded-xl text-base font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
+                className="flex items-center w-full px-4 py-4 rounded-2xl text-base font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-300 group"
               >
-                <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center mr-4 transition-all duration-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-2xl flex items-center justify-center mr-4 transition-all duration-300 group-hover:scale-110 shadow-lg">
                   {effectiveTheme === 'dark' ? (
-                    <Sun className="w-5 h-5 text-yellow-500" />
+                    <Sun className="w-6 h-6 text-yellow-500 group-hover:rotate-180 transition-transform duration-500" />
                   ) : (
-                    <Moon className="w-5 h-5 text-indigo-600" />
+                    <Moon className="w-6 h-6 text-indigo-600 group-hover:-rotate-12 transition-transform duration-300" />
                   )}
                 </div>
-                {effectiveTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                <span className="flex-1 text-left">
+                  {effectiveTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                </span>
               </button>
 
-              {/* Enhanced Mobile auth section */}
-              {isAuthenticated ? (
+              {/* Mobile auth section or user menu */}
+              {!isAuthenticated ? (
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3">
+                  <Link
+                    to="/login"
+                    className="block px-4 py-4 text-center text-base font-medium text-green-600 dark:text-green-400 bg-green-50/80 dark:bg-green-900/30 hover:bg-green-100/80 dark:hover:bg-green-900/50 rounded-2xl transition-all duration-300 backdrop-blur-xl border border-green-200/50 dark:border-green-700/50"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="block px-4 py-4 text-center text-base font-medium text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-green-500/25 transition-all duration-300 transform hover:scale-[1.02]"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Get Started
+                  </Link>
+                </div>
+              ) : (
+                /* Mobile authenticated user section */
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                   {/* Enhanced Mobile User Info Section */}
                   <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-2xl border border-green-200/50 dark:border-green-700/50 mb-4">
@@ -324,24 +369,14 @@ const Navbar = () => {
                   </div>
 
                   <Link
-                    to="/about"
-                    className="flex items-center px-4 py-3 rounded-xl text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200"
+                    to="/dashboard"
+                    className="flex items-center px-4 py-3 rounded-xl text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 mb-2"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mr-4">
-                      <Info className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mr-4">
+                      <LayoutDashboard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
-                    About
-                  </Link>
-                  <Link
-                    to="/contact"
-                    className="flex items-center px-4 py-3 rounded-xl text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mr-4">
-                      <Phone className="w-5 h-5 text-green-600 dark:text-green-400" />
-                    </div>
-                    Contact
+                    Dashboard
                   </Link>
                   
                   <hr className="my-4 border-gray-200 dark:border-gray-600" />
@@ -358,23 +393,6 @@ const Navbar = () => {
                       <p className="text-sm text-gray-500">End your session</p>
                     </div>
                   </button>
-                </div>
-              ) : (
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
-                  <Link
-                    to="/login"
-                    className="block px-4 py-3 text-center text-sm font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-xl transition-all duration-200"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/signup"
-                    className="block px-4 py-3 text-center text-sm font-medium text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Sign Up
-                  </Link>
                 </div>
               )}
             </div>

@@ -62,20 +62,19 @@ const Login = () => {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-green-900/20 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md sm:max-w-lg">
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-6 sm:p-8 lg:p-10 rounded-2xl shadow-2xl dark:shadow-green-500/10 border border-white/20 dark:border-gray-700/50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-green-900/20 dark:to-gray-900 py-6 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-6 sm:p-8 rounded-2xl shadow-2xl dark:shadow-green-500/10 border border-white/20 dark:border-gray-700/50">
             <div>
-              <div className="flex justify-center mb-8">
-                <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-700 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                    <span className="text-white font-bold text-2xl transform -rotate-3">DKO</span>
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full animate-pulse"></div>
+              <div className="flex justify-center mb-6">
+                <div className="text-center">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600 dark:text-green-400 tracking-tight">
+                    Digital Krishi Officer
+                  </h1>
                 </div>
               </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Sign in to your account
+          <h2 className="mt-4 text-center text-2xl font-extrabold text-gray-900 dark:text-white">
+            Log In to your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Or{' '}
@@ -88,8 +87,8 @@ const Login = () => {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-6">
+        <form className="mt-6 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-5">
             {/* Email/Username Field */}
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
@@ -105,18 +104,18 @@ const Login = () => {
                 })}
                 type="text"
                 autoComplete="username"
-                className="w-full min-h-[52px] px-4 py-3 pl-12 bg-gray-50/50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-green-500 focus:bg-white dark:focus:bg-gray-700 focus:outline-none transition-all duration-200"
+                className="w-full h-12 px-4 py-3 pl-12 bg-gray-50/50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-green-500 focus:bg-white dark:focus:bg-gray-700 focus:outline-none transition-all duration-200"
                 placeholder="Email or username"
                 id="identifier"
                 aria-invalid={!!errors.identifier}
-                aria-describedby={errors.identifier ? 'identifier-error' : undefined}
+                aria-describedBy={errors.identifier ? 'identifier-error' : undefined}
               />
               {errors.identifier && (
-                <div className="flex items-center mt-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border-l-4 border-red-500">
-                  <svg className="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <div className="flex items-center mt-1 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg border-l-4 border-red-500">
+                  <svg className="w-4 h-4 text-red-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
-                  <p id="identifier-error" className="text-sm text-red-600 dark:text-red-400">
+                  <p id="identifier-error" className="text-xs text-red-600 dark:text-red-400">
                     {errors.identifier.message}
                   </p>
                 </div>
@@ -138,11 +137,11 @@ const Login = () => {
                 })}
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
-                className="w-full min-h-[52px] px-4 py-3 pl-12 pr-12 bg-gray-50/50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-green-500 focus:bg-white dark:focus:bg-gray-700 focus:outline-none transition-all duration-200"
+                className="w-full h-12 px-4 py-3 pl-12 pr-12 bg-gray-50/50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-green-500 focus:bg-white dark:focus:bg-gray-700 focus:outline-none transition-all duration-200"
                 placeholder="Password"
                 id="password"
                 aria-invalid={!!errors.password}
-                aria-describedby={errors.password ? 'password-error' : undefined}
+                aria-describedBy={errors.password ? 'password-error' : undefined}
               />
               <button
                 type="button"
@@ -157,11 +156,11 @@ const Login = () => {
                 )}
               </button>
               {errors.password && (
-                <div className="flex items-center mt-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border-l-4 border-red-500">
-                  <svg className="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <div className="flex items-center mt-1 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg border-l-4 border-red-500">
+                  <svg className="w-4 h-4 text-red-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
-                  <p id="password-error" className="text-sm text-red-600 dark:text-red-400">
+                  <p id="password-error" className="text-xs text-red-600 dark:text-red-400">
                     {errors.password.message}
                   </p>
                 </div>
@@ -188,14 +187,14 @@ const Login = () => {
                 to="/forgot-password"
                 className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
               >
-                Forgot your password?
+                Forgot password?
               </Link>
             </div>
           </div>
 
           {/* Error message */}
           {errors.root && (
-            <div className="rounded-xl bg-red-50 dark:bg-red-900/20 p-4">
+            <div className="rounded-xl bg-red-50 dark:bg-red-900/20 p-3">
               <p className="text-sm text-red-800 dark:text-red-400" aria-live="polite">
                 {errors.root.message}
               </p>
@@ -207,7 +206,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group relative w-full overflow-hidden bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl"
+              className="group relative w-full overflow-hidden bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl"
             >
               <span className="relative z-10 flex items-center justify-center">
                 {isSubmitting ? (
@@ -224,8 +223,8 @@ const Login = () => {
           </div>
 
           {/* Demo credentials */}
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-400 mb-2">
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-400 mb-1">
               Demo Credentials
             </h3>
             <p className="text-xs text-blue-600 dark:text-blue-300">
