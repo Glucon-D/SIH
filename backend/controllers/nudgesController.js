@@ -1,5 +1,6 @@
 const axios = require("axios");
-const { generateText } = require("../config/aiConfig"); // OpenRouter client
+const { generateText } = require("ai");
+const { getModel } = require("../config/openrouter");
 const { WEATHER_API_URL, WEATHER_API_KEY } = require("../config/weatherConfig");
 
 const getNudges = async (req, res) => {
@@ -32,10 +33,17 @@ const getNudges = async (req, res) => {
       - Do NOT include phrases like "Okay, here are..." or "Here are 3 tips".
     `;
 
-    const nudgesText = await generateText(
-      "google/gemini-2.5-flash-lite",
-      prompt
-    );
+    // Get AI model with proper headers (uses centralized default model)
+    const model = getModel();
+
+    // Generate text using the SDK
+    const result = await generateText({
+      model: model,
+      messages: [{ role: "user", content: prompt }],
+      maxTokens: 300,
+    });
+
+    const nudgesText = result.text;
 
     // Clean up text into array of nudges
     const nudges = nudgesText

@@ -21,6 +21,8 @@ const generateText = async (model, prompt, max_tokens = 300) => {
         headers: {
           Authorization: `Bearer ${OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
+          "HTTP-Referer": process.env.FRONTEND_URL || "https://sih.aysh.me",
+          "X-Title": process.env.APP_NAME || "SIH 2025",
         },
       }
     );
