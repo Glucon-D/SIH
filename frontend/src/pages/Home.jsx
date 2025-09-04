@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, MessageCircle, Users, Clock, Shield, Zap, Globe } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Footer from '../components/layout/Footer';
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
@@ -215,6 +216,8 @@ const Home = () => {
           )}
         </div>
       </section>
+      
+      <Footer />
     </div>
   );
 };

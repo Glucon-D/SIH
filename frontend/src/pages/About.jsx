@@ -1,4 +1,5 @@
 import { Users, Target, Award, Heart } from 'lucide-react';
+import Footer from '../components/layout/Footer';
 
 const About = () => {
   const team = [
@@ -249,6 +250,8 @@ const About = () => {
           </div>
         </div>
       </section>
+      
+      <Footer />
     </div>
   );
 };

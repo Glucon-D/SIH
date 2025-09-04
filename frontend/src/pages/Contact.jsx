@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
+import Footer from '../components/layout/Footer';
 
 const Contact = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -299,6 +300,8 @@ const Contact = () => {
           </div>
         </div>
       </section>
+      
+      <Footer />
     </div>
   );
 };
