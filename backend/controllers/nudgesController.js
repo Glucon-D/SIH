@@ -33,7 +33,7 @@ const getNudges = async (req, res) => {
     `;
 
     const nudgesText = await generateText(
-      "google/gemini-2.0-flash-001",
+      "google/gemini-2.5-flash-lite",
       prompt
     );
 
