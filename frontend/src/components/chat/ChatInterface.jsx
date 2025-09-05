@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, memo } from "react";
 import { Send, Loader, User, Bot, Image, Paperclip } from "lucide-react";
+import MarkdownRenderer from "./MarkdownRenderer";
 import { useChat } from "../../context/ChatContext";
 import { useAuth } from "../../context/AuthContext";
 import { format } from "date-fns";
@@ -114,8 +115,12 @@ const ChatInterface = () => {
                 : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
             }`}
           >
-            <div className="text-sm whitespace-pre-wrap break-words">
-              {msg.content}
+            <div className="text-sm break-words">
+              {isUser ? (
+                <div className="whitespace-pre-wrap">{msg.content}</div>
+              ) : (
+                <MarkdownRenderer content={msg.content} />
+              )}
             </div>
             <div
               className={`text-xs mt-1 ${
@@ -210,8 +215,8 @@ const ChatInterface = () => {
                     </div>
                   </div>
                   <div className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white">
-                    <div className="text-sm whitespace-pre-wrap break-words">
-                      {streamingMessage}
+                    <div className="text-sm break-words">
+                      <MarkdownRenderer content={streamingMessage} />
                       <span className="inline-block w-2 h-4 bg-blue-600 ml-1 animate-pulse" />
                     </div>
                   </div>
