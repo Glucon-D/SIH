@@ -484,6 +484,40 @@ export const ChatProvider = ({ children }) => {
     [createThread, joinThread, setError, addNotification]
   );
 
+  const updateThread = useCallback(
+    async (threadId, updateData) => {
+      try {
+        const response = await chatService.updateThread(threadId, updateData);
+
+        if (response.success) {
+          dispatch({
+            type: actionTypes.UPDATE_THREAD,
+            payload: response.data.thread,
+          });
+          addNotification({
+            type: "success",
+            message: "Thread updated successfully",
+          });
+          return response.data.thread;
+        } else {
+          throw new Error(response.message || "Failed to update thread");
+        }
+      } catch (error) {
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to update thread";
+        setError(errorMessage);
+        addNotification({
+          type: "error",
+          message: errorMessage,
+        });
+        return null;
+      }
+    },
+    [setError, addNotification]
+  );
+
   const deleteThread = async (threadId) => {
     try {
       const response = await chatService.deleteThread(threadId);
@@ -530,6 +564,7 @@ export const ChatProvider = ({ children }) => {
       selectThread,
       loadMessages,
       sendMessage,
+      updateThread,
       deleteThread,
     }),
     [
@@ -539,6 +574,7 @@ export const ChatProvider = ({ children }) => {
       selectThread,
       loadMessages,
       sendMessage,
+      updateThread,
       deleteThread,
     ]
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import {
   MessageCircle,
@@ -12,6 +12,12 @@ import {
   Loader,
   ChevronLeft,
   ChevronRight,
+  Edit3,
+  Trash2,
+  Archive,
+  RotateCcw,
+  X,
+  Save,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
@@ -24,12 +30,39 @@ const Dashboard = () => {
     currentThread,
     createThread,
     selectThread,
+    updateThread,
+    deleteThread,
     isLoading: chatLoading,
   } = useChat();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Modal and dropdown states
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedThread, setSelectedThread] = useState(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  const [editPriority, setEditPriority] = useState("");
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Redirect if not authenticated
   if (!isLoading && !isAuthenticated) {
@@ -59,6 +92,73 @@ const Dashboard = () => {
     if (thread) {
       selectThread(thread);
     }
+  };
+
+  // Thread action handlers
+  const handleEditThread = (thread) => {
+    setSelectedThread(thread);
+    setEditTitle(thread.title);
+    setEditCategory(thread.category);
+    setEditStatus(thread.status);
+    setEditPriority(thread.priority);
+    setShowEditModal(true);
+    setActiveDropdown(null);
+  };
+
+  const handleDeleteThread = (thread) => {
+    setSelectedThread(thread);
+    setShowDeleteModal(true);
+    setActiveDropdown(null);
+  };
+
+  const handleArchiveThread = async (thread) => {
+    await updateThread(thread._id, { status: "archived" });
+    setActiveDropdown(null);
+  };
+
+  const handleUnarchiveThread = async (thread) => {
+    await updateThread(thread._id, { status: "active" });
+    setActiveDropdown(null);
+  };
+
+  const handleMarkResolved = async (thread) => {
+    await updateThread(thread._id, { status: "resolved" });
+    setActiveDropdown(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedThread) return;
+
+    const updateData = {
+      title: editTitle,
+      category: editCategory,
+      status: editStatus,
+      priority: editPriority,
+    };
+
+    const updatedThread = await updateThread(selectedThread._id, updateData);
+    if (updatedThread) {
+      setShowEditModal(false);
+      setSelectedThread(null);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedThread) return;
+
+    await deleteThread(selectedThread._id);
+    setShowDeleteModal(false);
+    setSelectedThread(null);
+
+    // If the deleted thread was the current thread, clear it
+    if (currentThread?._id === selectedThread._id) {
+      // The context will handle clearing the current thread
+    }
+  };
+
+  const toggleDropdown = (threadId, event) => {
+    event.stopPropagation();
+    setActiveDropdown(activeDropdown === threadId ? null : threadId);
   };
 
   const filteredThreads = threads.filter((thread) => {
@@ -245,9 +345,68 @@ const Dashboard = () => {
                           </span>
                         </div>
                       </div>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                      <div
+                        className="relative"
+                        ref={activeDropdown === thread._id ? dropdownRef : null}
+                      >
+                        <button
+                          onClick={(e) => toggleDropdown(thread._id, e)}
+                          className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {activeDropdown === thread._id && (
+                          <div className="absolute right-0 top-8 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                            <button
+                              onClick={() => handleEditThread(thread)}
+                              className="flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            >
+                              <Edit3 className="w-4 h-4 mr-2" />
+                              Edit Title
+                            </button>
+
+                            {thread.status === "active" && (
+                              <button
+                                onClick={() => handleMarkResolved(thread)}
+                                className="flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                Mark as Resolved
+                              </button>
+                            )}
+
+                            {thread.status !== "archived" ? (
+                              <button
+                                onClick={() => handleArchiveThread(thread)}
+                                className="flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <Archive className="w-4 h-4 mr-2" />
+                                Archive
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleUnarchiveThread(thread)}
+                                className="flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <RotateCcw className="w-4 h-4 mr-2" />
+                                Unarchive
+                              </button>
+                            )}
+
+                            <div className="border-t border-gray-200 dark:border-gray-600 my-1"></div>
+
+                            <button
+                              onClick={() => handleDeleteThread(thread)}
+                              className="flex items-center w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -282,6 +441,203 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Thread Modal */}
+      {showEditModal && selectedThread && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+            onClick={() => setShowEditModal(false)}
+          />
+
+          {/* Modal */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-gradient-to-br from-green-500 to-blue-500 rounded-xl">
+                    <Edit3 className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Edit Thread
+                    </h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Update thread details
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-4">
+                {/* Title */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="Enter thread title"
+                  />
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Category
+                  </label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  >
+                    <option value="pest_management">Pest Management</option>
+                    <option value="disease_control">Disease Control</option>
+                    <option value="fertilizer_advice">Fertilizer Advice</option>
+                    <option value="weather_guidance">Weather Guidance</option>
+                    <option value="crop_planning">Crop Planning</option>
+                    <option value="market_information">
+                      Market Information
+                    </option>
+                    <option value="government_schemes">
+                      Government Schemes
+                    </option>
+                    <option value="general_query">General Query</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Status
+                  </label>
+                  <select
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  >
+                    <option value="active">Active</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+
+                {/* Priority */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Priority
+                  </label>
+                  <select
+                    value={editPriority}
+                    onChange={(e) => setEditPriority(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 py-2 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  className="flex-1 py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && selectedThread && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+            onClick={() => setShowDeleteModal(false)}
+          />
+
+          {/* Modal */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Delete Thread
+                    </h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      This action cannot be undone
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <p className="text-gray-700 dark:text-gray-300">
+                  Are you sure you want to delete the thread "
+                  {selectedThread.title}"? This will permanently remove the
+                  thread and all its messages.
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 py-2 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="flex-1 py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Thread
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
