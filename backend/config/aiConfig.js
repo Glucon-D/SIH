@@ -41,7 +41,7 @@ const generateThreadTitle = async (userMessage) => {
 
   for (const model of models) {
     try {
-      const prompt = `Create a short 2-4 word title for this farming question or issue. Focus on the main problem or topic.
+      const prompt = `Create a short 2-4 word title for this farming question or issue. Focus on the main problem or topic.Return title in the same language as the input.
 
 Examples:
 - "My tomato plants have brown spots" → "Tomato Leaf Disease"

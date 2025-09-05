@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   ChevronUp,
   Zap,
+  User,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
@@ -186,11 +187,22 @@ const Navbar = () => {
                     {/* Enhanced Avatar with Online Status */}
                     <div className="relative">
                       <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-700 text-white font-semibold text-sm shadow-lg group-hover:shadow-xl transition-all duration-200">
-                        {(
-                          user?.profile?.firstName?.charAt(0) ||
-                          user?.username?.charAt(0) ||
-                          "U"
-                        ).toUpperCase()}
+                        {(() => {
+                          const firstName = user?.profile?.firstName || "";
+                          const lastName = user?.profile?.lastName || "";
+                          const username = user?.username || "";
+
+                          if (firstName && lastName) {
+                            return `${firstName.charAt(0)}${lastName.charAt(
+                              0
+                            )}`.toUpperCase();
+                          } else if (firstName) {
+                            return firstName.charAt(0).toUpperCase();
+                          } else if (username) {
+                            return username.charAt(0).toUpperCase();
+                          }
+                          return "U";
+                        })()}
                       </div>
                       {/* Online status indicator */}
                       <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-900 rounded-full"></div>
@@ -199,7 +211,17 @@ const Navbar = () => {
                     {/* User Name (hidden on small screens) */}
                     <div className="hidden lg:block text-left">
                       <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {user?.profile?.firstName || user?.username || "User"}
+                        {(() => {
+                          const firstName = user?.profile?.firstName || "";
+                          const lastName = user?.profile?.lastName || "";
+
+                          if (firstName && lastName) {
+                            return `${firstName} ${lastName}`;
+                          } else if (firstName) {
+                            return firstName;
+                          }
+                          return user?.username || "User";
+                        })()}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         Online
@@ -228,17 +250,37 @@ const Navbar = () => {
                       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-white font-semibold text-sm">
-                            {(
-                              user?.profile?.firstName?.charAt(0) ||
-                              user?.username?.charAt(0) ||
-                              "U"
-                            ).toUpperCase()}
+                            {(() => {
+                              const firstName = user?.profile?.firstName || "";
+                              const lastName = user?.profile?.lastName || "";
+                              const username = user?.username || "";
+
+                              if (firstName && lastName) {
+                                return `${firstName.charAt(0)}${lastName.charAt(
+                                  0
+                                )}`.toUpperCase();
+                              } else if (firstName) {
+                                return firstName.charAt(0).toUpperCase();
+                              } else if (username) {
+                                return username.charAt(0).toUpperCase();
+                              }
+                              return "U";
+                            })()}
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              {user?.profile?.firstName ||
-                                user?.username ||
-                                "User"}
+                              {(() => {
+                                const firstName =
+                                  user?.profile?.firstName || "";
+                                const lastName = user?.profile?.lastName || "";
+
+                                if (firstName && lastName) {
+                                  return `${firstName} ${lastName}`;
+                                } else if (firstName) {
+                                  return firstName;
+                                }
+                                return user?.username || "User";
+                              })()}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                               {user?.email || "user@example.com"}
@@ -261,6 +303,22 @@ const Navbar = () => {
                             <p className="font-medium">Dashboard</p>
                             <p className="text-xs text-gray-500">
                               Manage your account
+                            </p>
+                          </div>
+                        </Link>
+
+                        <Link
+                          to="/profile"
+                          className="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-3">
+                            <User className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Profile</p>
+                            <p className="text-xs text-gray-500">
+                              Manage your profile
                             </p>
                           </div>
                         </Link>
