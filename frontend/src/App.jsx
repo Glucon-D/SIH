@@ -11,8 +11,8 @@ import { LanguageProvider } from "./context/LanguageContext.jsx";
 function App({ children }) {
   return (
     <AppProvider>
-      <LanguageProvider>
-        <AuthProvider>
+      <AuthProvider>
+        <LanguageProvider>
           <ThemeProvider>
             <SocketProvider>
               <ChatProvider>
@@ -44,8 +44,8 @@ function App({ children }) {
               </ChatProvider>
             </SocketProvider>
           </ThemeProvider>
-        </AuthProvider>
-      </LanguageProvider>
+        </LanguageProvider>
+      </AuthProvider>
     </AppProvider>
   );
 }
