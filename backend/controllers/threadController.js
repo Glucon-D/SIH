@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 const Thread = require('../models/Thread');
 const Message = require('../models/Message');
 const logger = require('../utils/logger');
+const cache = require('../utils/cache');
 
 // Create new thread
 const createThread = async (req, res) => {
@@ -30,6 +31,11 @@ const createThread = async (req, res) => {
 
     await thread.save();
     await thread.populate('userId', 'username profile.firstName profile.lastName');
+
+    // Invalidate user's thread cache
+    const cachePattern = `threads:${userId}:`;
+    const cacheKeys = cache.stats().keys.filter(key => key.startsWith(cachePattern));
+    cacheKeys.forEach(key => cache.delete(key));
 
     logger.info(`Thread created: ${thread._id} by user ${userId}`);
 
@@ -64,17 +70,26 @@ const getThreads = async (req, res) => {
     const { page = 1, limit = 20, status, category, search } = req.query;
     const userId = req.user._id;
 
+    // Create cache key
+    const cacheKey = `threads:${userId}:${page}:${limit}:${status || 'all'}:${category || 'all'}:${search || ''}`;
+
+    // Try to get from cache first
+    const cachedResult = cache.get(cacheKey);
+    if (cachedResult) {
+      return res.json(cachedResult);
+    }
+
     // Build query
     const query = { userId, isActive: true };
-    
+
     if (status) {
       query.status = status;
     }
-    
+
     if (category) {
       query.category = category;
     }
-    
+
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -84,7 +99,7 @@ const getThreads = async (req, res) => {
     }
 
     const skip = (page - 1) * limit;
-    
+
     const [threads, total] = await Promise.all([
       Thread.find(query)
         .populate('userId', 'username profile.firstName profile.lastName')
@@ -94,7 +109,7 @@ const getThreads = async (req, res) => {
       Thread.countDocuments(query)
     ]);
 
-    res.json({
+    const result = {
       success: true,
       data: {
         threads,
@@ -105,7 +120,12 @@ const getThreads = async (req, res) => {
           pages: Math.ceil(total / limit)
         }
       }
-    });
+    };
+
+    // Cache the result for 2 minutes
+    cache.set(cacheKey, result, 2 * 60 * 1000);
+
+    res.json(result);
   } catch (error) {
     logger.error(`Get threads error: ${error.message}`);
     res.status(500).json({

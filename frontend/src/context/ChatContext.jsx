@@ -7,6 +7,7 @@ import {
   useMemo,
 } from "react";
 import { chatService } from "../services/chat";
+import { localSyncService } from "../services/localSync";
 import { useAuth } from "./AuthContext";
 import { useSocket } from "./SocketContext";
 import { useApp } from "./AppContext";
@@ -16,6 +17,7 @@ const initialState = {
   threads: [],
   currentThread: null,
   messages: [],
+  messageCache: {}, // Cache messages per thread: { threadId: { messages: [], pagination: {} } }
   isLoading: false,
   isStreaming: false,
   isThinking: false,
@@ -23,17 +25,27 @@ const initialState = {
   typingUsers: [],
   pagination: {
     page: 1,
-    limit: 50,
+    limit: 20,
     total: 0,
+    pages: 0,
     hasMore: true,
   },
+  cacheStats: {
+    threads: 0,
+    messages: 0,
+    isInitialized: false,
+  },
+  fromCache: false,
+  isOffline: false,
 };
 
 // Action types
 const actionTypes = {
   SET_THREADS: "SET_THREADS",
+  ADD_THREADS: "ADD_THREADS",
   ADD_THREAD: "ADD_THREAD",
   UPDATE_THREAD: "UPDATE_THREAD",
+  UPDATE_THREAD_TITLE: "UPDATE_THREAD_TITLE",
   DELETE_THREAD: "DELETE_THREAD",
   SET_CURRENT_THREAD: "SET_CURRENT_THREAD",
   SET_MESSAGES: "SET_MESSAGES",
@@ -48,6 +60,11 @@ const actionTypes = {
   REMOVE_TYPING_USER: "REMOVE_TYPING_USER",
   SET_PAGINATION: "SET_PAGINATION",
   CLEAR_MESSAGES: "CLEAR_MESSAGES",
+  SET_CACHE_STATS: "SET_CACHE_STATS",
+  SET_FROM_CACHE: "SET_FROM_CACHE",
+  SET_OFFLINE: "SET_OFFLINE",
+  CACHE_MESSAGES: "CACHE_MESSAGES",
+  LOAD_CACHED_MESSAGES: "LOAD_CACHED_MESSAGES",
 };
 
 // Reducer
@@ -55,6 +72,9 @@ const chatReducer = (state, action) => {
   switch (action.type) {
     case actionTypes.SET_THREADS:
       return { ...state, threads: action.payload };
+
+    case actionTypes.ADD_THREADS:
+      return { ...state, threads: [...state.threads, ...action.payload] };
 
     case actionTypes.ADD_THREAD:
       return { ...state, threads: [action.payload, ...state.threads] };
@@ -70,6 +90,20 @@ const chatReducer = (state, action) => {
         currentThread:
           state.currentThread?._id === action.payload._id
             ? { ...state.currentThread, ...action.payload }
+            : state.currentThread,
+      };
+
+    case actionTypes.UPDATE_THREAD_TITLE:
+      return {
+        ...state,
+        threads: state.threads.map((thread) =>
+          thread._id === action.payload.threadId
+            ? { ...thread, title: action.payload.title }
+            : thread
+        ),
+        currentThread:
+          state.currentThread?._id === action.payload.threadId
+            ? { ...state.currentThread, title: action.payload.title }
             : state.currentThread,
       };
 
@@ -175,6 +209,36 @@ const chatReducer = (state, action) => {
     case actionTypes.CLEAR_MESSAGES:
       return { ...state, messages: [], streamingMessage: "" };
 
+    case actionTypes.SET_CACHE_STATS:
+      return { ...state, cacheStats: action.payload };
+
+    case actionTypes.SET_FROM_CACHE:
+      return { ...state, fromCache: action.payload };
+
+    case actionTypes.SET_OFFLINE:
+      return { ...state, isOffline: action.payload };
+
+    case actionTypes.CACHE_MESSAGES:
+      return {
+        ...state,
+        messageCache: {
+          ...state.messageCache,
+          [action.payload.threadId]: {
+            messages: action.payload.messages,
+            pagination: action.payload.pagination,
+            lastUpdated: Date.now()
+          }
+        }
+      };
+
+    case actionTypes.LOAD_CACHED_MESSAGES:
+      const cachedData = state.messageCache[action.payload.threadId];
+      return {
+        ...state,
+        messages: cachedData ? cachedData.messages : [],
+        pagination: cachedData ? cachedData.pagination : state.pagination
+      };
+
     default:
       return state;
   }
@@ -213,14 +277,56 @@ export const ChatProvider = ({ children }) => {
       socket.on("new_message", (data) => {
         console.log("Received new message:", data);
         dispatch({ type: actionTypes.ADD_MESSAGE, payload: data.message });
+
+        // Invalidate cache for this thread since we have new messages
+        if (data.message.threadId) {
+          dispatch({
+            type: actionTypes.CACHE_MESSAGES,
+            payload: {
+              threadId: data.message.threadId,
+              messages: [...state.messages, data.message],
+              pagination: state.pagination
+            }
+          });
+        }
       });
 
       socket.on("message_updated", (data) => {
         dispatch({ type: actionTypes.UPDATE_MESSAGE, payload: data.message });
+
+        // Update cache as well
+        if (data.message.threadId && state.messageCache[data.message.threadId]) {
+          const cachedData = state.messageCache[data.message.threadId];
+          const updatedMessages = cachedData.messages.map(msg =>
+            msg._id === data.message._id ? data.message : msg
+          );
+          dispatch({
+            type: actionTypes.CACHE_MESSAGES,
+            payload: {
+              threadId: data.message.threadId,
+              messages: updatedMessages,
+              pagination: cachedData.pagination
+            }
+          });
+        }
       });
 
       socket.on("message_deleted", (data) => {
         dispatch({ type: actionTypes.DELETE_MESSAGE, payload: data.messageId });
+
+        // Update cache by removing the deleted message
+        if (data.threadId && state.messageCache[data.threadId]) {
+          const cachedData = state.messageCache[data.threadId];
+          const filteredMessages = cachedData.messages.filter(msg => msg._id !== data.messageId);
+          dispatch({
+            type: actionTypes.CACHE_MESSAGES,
+            payload: {
+              threadId: data.threadId,
+              messages: filteredMessages,
+              pagination: cachedData.pagination
+            }
+          });
+        }
       });
 
       // Typing events
@@ -245,7 +351,15 @@ export const ChatProvider = ({ children }) => {
 
       // Thread events
       socket.on("thread_updated", (data) => {
-        dispatch({ type: actionTypes.UPDATE_THREAD, payload: data.thread });
+        // Handle both old format (data.thread) and new format (data.threadId, data.title)
+        if (data.thread) {
+          dispatch({ type: actionTypes.UPDATE_THREAD, payload: data.thread });
+        } else if (data.threadId && data.title) {
+          dispatch({
+            type: actionTypes.UPDATE_THREAD_TITLE,
+            payload: { threadId: data.threadId, title: data.title },
+          });
+        }
       });
 
       return () => {
@@ -261,23 +375,67 @@ export const ChatProvider = ({ children }) => {
     }
   }, [socket, isConnected]);
 
+  // Initialize local sync service (temporarily disabled for debugging)
+  // useEffect(() => {
+  //   const initializeSync = async () => {
+  //     try {
+  //       await localSyncService.init();
+  //       const stats = await chatService.getCacheStats();
+  //       dispatch({ type: actionTypes.SET_CACHE_STATS, payload: stats });
+  //       console.log('Local sync service initialized:', stats);
+  //     } catch (error) {
+  //       console.error('Failed to initialize local sync service:', error);
+  //     }
+  //   };
+
+  //   if (isAuthenticated) {
+  //     initializeSync();
+  //   }
+  // }, [isAuthenticated]);
+
   // Actions - Memoized with useCallback to prevent unnecessary re-renders
   const loadThreads = useCallback(
     async (filters = {}) => {
       try {
         dispatch({ type: actionTypes.SET_LOADING, payload: true });
+        dispatch({ type: actionTypes.SET_FROM_CACHE, payload: false });
+        dispatch({ type: actionTypes.SET_OFFLINE, payload: false });
 
         const response = await chatService.getThreads(filters);
 
         if (response.success) {
-          dispatch({
-            type: actionTypes.SET_THREADS,
-            payload: response.data.threads,
-          });
+          if (filters.append) {
+            // Append new threads for pagination
+            dispatch({
+              type: actionTypes.ADD_THREADS,
+              payload: response.data.threads,
+            });
+          } else {
+            // Replace threads for new search/filter
+            dispatch({
+              type: actionTypes.SET_THREADS,
+              payload: response.data.threads,
+            });
+          }
           dispatch({
             type: actionTypes.SET_PAGINATION,
             payload: response.data.pagination,
           });
+
+          // Update cache status indicators
+          dispatch({ type: actionTypes.SET_FROM_CACHE, payload: response.fromCache || false });
+          dispatch({ type: actionTypes.SET_OFFLINE, payload: response.offline || false });
+
+          // Show cache notification if data is from cache
+          if (response.fromCache) {
+            addNotification({
+              type: response.offline ? "warning" : "info",
+              message: response.offline
+                ? "Showing cached data - you're offline"
+                : "Showing cached data for faster loading",
+              duration: 3000,
+            });
+          }
         } else {
           throw new Error(response.message || "Failed to load threads");
         }
@@ -332,7 +490,7 @@ export const ChatProvider = ({ children }) => {
     [setError, addNotification]
   );
 
-  const selectThread = async (thread) => {
+  const selectThread = useCallback(async (thread) => {
     try {
       // Leave current thread
       if (state.currentThread) {
@@ -341,15 +499,26 @@ export const ChatProvider = ({ children }) => {
 
       // Set new current thread
       dispatch({ type: actionTypes.SET_CURRENT_THREAD, payload: thread });
-      dispatch({ type: actionTypes.CLEAR_MESSAGES });
 
       // Join new thread
       if (thread) {
+        // Check if we have cached messages for this thread
+        const cachedData = state.messageCache[thread._id];
+        const isCacheFresh = cachedData && (Date.now() - cachedData.lastUpdated) < 2 * 60 * 1000; // 2 minutes
+
+        if (isCacheFresh) {
+          // Load cached messages immediately (no loading state)
+          dispatch({ type: actionTypes.LOAD_CACHED_MESSAGES, payload: { threadId: thread._id } });
+        } else {
+          // Clear messages only if no cache exists
+          dispatch({ type: actionTypes.CLEAR_MESSAGES });
+        }
+
         console.log("Joining thread:", thread._id);
         joinThread(thread._id);
 
-        // Load messages for the thread
-        await loadMessages(thread._id);
+        // Load fresh messages (in background if cached, with loading if not cached)
+        await loadMessages(thread._id, 1, !isCacheFresh);
       }
     } catch (error) {
       console.error("Error selecting thread:", error);
@@ -358,11 +527,13 @@ export const ChatProvider = ({ children }) => {
         message: "Failed to select thread",
       });
     }
-  };
+  }, [state.currentThread, state.messageCache, leaveThread, joinThread, addNotification]);
 
-  const loadMessages = async (threadId, page = 1) => {
+  const loadMessages = async (threadId, page = 1, showLoading = true) => {
     try {
-      dispatch({ type: actionTypes.SET_LOADING, payload: true });
+      if (showLoading) {
+        dispatch({ type: actionTypes.SET_LOADING, payload: true });
+      }
 
       const response = await chatService.getChatHistory(threadId, {
         page,
@@ -374,6 +545,16 @@ export const ChatProvider = ({ children }) => {
           dispatch({
             type: actionTypes.SET_MESSAGES,
             payload: response.data.messages,
+          });
+
+          // Cache the messages for this thread
+          dispatch({
+            type: actionTypes.CACHE_MESSAGES,
+            payload: {
+              threadId,
+              messages: response.data.messages,
+              pagination: response.data.pagination
+            }
           });
         } else {
           dispatch({
@@ -399,7 +580,9 @@ export const ChatProvider = ({ children }) => {
         message: errorMessage,
       });
     } finally {
-      dispatch({ type: actionTypes.SET_LOADING, payload: false });
+      if (showLoading) {
+        dispatch({ type: actionTypes.SET_LOADING, payload: false });
+      }
     }
   };
 
@@ -414,8 +597,7 @@ export const ChatProvider = ({ children }) => {
         let actualThreadId = threadId;
         if (!actualThreadId) {
           const newThread = await createThread({
-            title:
-              content.substring(0, 50) + (content.length > 50 ? "..." : ""),
+            title: "New Chat",
             category: "general_query",
           });
 
@@ -462,6 +644,40 @@ export const ChatProvider = ({ children }) => {
     [createThread, joinThread, setError, addNotification]
   );
 
+  const updateThread = useCallback(
+    async (threadId, updateData) => {
+      try {
+        const response = await chatService.updateThread(threadId, updateData);
+
+        if (response.success) {
+          dispatch({
+            type: actionTypes.UPDATE_THREAD,
+            payload: response.data.thread,
+          });
+          addNotification({
+            type: "success",
+            message: "Thread updated successfully",
+          });
+          return response.data.thread;
+        } else {
+          throw new Error(response.message || "Failed to update thread");
+        }
+      } catch (error) {
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to update thread";
+        setError(errorMessage);
+        addNotification({
+          type: "error",
+          message: errorMessage,
+        });
+        return null;
+      }
+    },
+    [setError, addNotification]
+  );
+
   const deleteThread = async (threadId) => {
     try {
       const response = await chatService.deleteThread(threadId);
@@ -488,6 +704,68 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
+  // Cache management functions
+  const clearCache = useCallback(async () => {
+    try {
+      await chatService.clearCache();
+      const stats = await chatService.getCacheStats();
+      dispatch({ type: actionTypes.SET_CACHE_STATS, payload: stats });
+      addNotification({
+        type: "success",
+        message: "Cache cleared successfully",
+      });
+    } catch (error) {
+      console.error('Failed to clear cache:', error);
+      addNotification({
+        type: "error",
+        message: "Failed to clear cache",
+      });
+    }
+  }, [addNotification]);
+
+  const refreshCacheStats = useCallback(async () => {
+    try {
+      const stats = await chatService.getCacheStats();
+      dispatch({ type: actionTypes.SET_CACHE_STATS, payload: stats });
+    } catch (error) {
+      console.error('Failed to refresh cache stats:', error);
+    }
+  }, []);
+
+  const forceRefresh = useCallback(async (filters = {}) => {
+    try {
+      dispatch({ type: actionTypes.SET_LOADING, payload: true });
+      const response = await chatService.forceRefreshThreads(filters);
+
+      if (response.success) {
+        dispatch({
+          type: actionTypes.SET_THREADS,
+          payload: response.data.threads,
+        });
+        dispatch({
+          type: actionTypes.SET_PAGINATION,
+          payload: response.data.pagination,
+        });
+        dispatch({ type: actionTypes.SET_FROM_CACHE, payload: false });
+        dispatch({ type: actionTypes.SET_OFFLINE, payload: false });
+
+        addNotification({
+          type: "success",
+          message: "Data refreshed from server",
+        });
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Failed to refresh data";
+      setError(errorMessage);
+      addNotification({
+        type: "error",
+        message: errorMessage,
+      });
+    } finally {
+      dispatch({ type: actionTypes.SET_LOADING, payload: false });
+    }
+  }, [setError, addNotification]);
+
   // Load threads when authenticated
   useEffect(() => {
     if (isAuthenticated) {
@@ -497,7 +775,7 @@ export const ChatProvider = ({ children }) => {
       dispatch({ type: actionTypes.SET_CURRENT_THREAD, payload: null });
       dispatch({ type: actionTypes.CLEAR_MESSAGES });
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated]); // Removed loadThreads from dependency array to prevent infinite re-renders
 
   // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo(
@@ -508,7 +786,11 @@ export const ChatProvider = ({ children }) => {
       selectThread,
       loadMessages,
       sendMessage,
+      updateThread,
       deleteThread,
+      clearCache,
+      refreshCacheStats,
+      forceRefresh,
     }),
     [
       state,
@@ -517,7 +799,11 @@ export const ChatProvider = ({ children }) => {
       selectThread,
       loadMessages,
       sendMessage,
+      updateThread,
       deleteThread,
+      clearCache,
+      refreshCacheStats,
+      forceRefresh,
     ]
   );
 

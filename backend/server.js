@@ -8,14 +8,19 @@ const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
-const connectDB = require("./config/database");
-const { validateConfig } = require("./config/openrouter");
+const nudgesRoutes = require("./routes/nudgesRoutes");
 const authRoutes = require("./routes/auth");
 const chatRoutes = require("./routes/chat");
 const userRoutes = require("./routes/users");
 const threadRoutes = require("./routes/threads");
+
+
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./utils/logger");
+
+const connectDB = require("./config/database");
+
+const { validateConfig } = require("./config/openrouter");
 
 const app = express();
 const server = http.createServer(app);
@@ -26,10 +31,10 @@ const io = socketIo(server, {
   },
 });
 
-// Connect to MongoDB
 connectDB();
 
-// Validate OpenRouter configuration
+
+// ---- Validate OpenRouter ----
 try {
   validateConfig();
 } catch (error) {
@@ -37,44 +42,40 @@ try {
   console.error(`OpenRouter configuration error: ${error.message}`);
 }
 
-// Security middleware
 app.use(helmet());
 app.use(compression());
-
-// CORS configuration
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true,
   })
 );
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later.",
-});
-app.use("/api/", limiter);
-
-// Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// Logging middleware
+// Logging
 app.use(
   morgan("combined", {
     stream: { write: (message) => logger.info(message.trim()) },
   })
 );
 
-// Routes
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 100,
+  message: "Too many requests from this IP, please try again later.",
+});
+app.use("/api/", limiter);
+
+// ---- Routes ----
+app.use("/api/nudges", nudgesRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/threads", threadRoutes);
 
-// Health check endpoint
+
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     status: "OK",
@@ -83,15 +84,13 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Socket.io connection handling
+// ---- Socket.io ----
 io.on("connection", (socket) => {
   logger.info(`User connected: ${socket.id}`);
 
   socket.on("join_thread", (threadId) => {
     socket.join(threadId);
     logger.info(`User ${socket.id} joined thread ${threadId}`);
-
-    // Confirm join to client
     socket.emit("thread_joined", { threadId });
   });
 
@@ -105,10 +104,8 @@ io.on("connection", (socket) => {
   });
 });
 
-// Make io accessible to routes
 app.set("io", io);
 
-// Error handling middleware (should be last)
 app.use(errorHandler);
 
 // 404 handler
@@ -116,8 +113,8 @@ app.use("*", (req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
+// ---- Start server ----
 const PORT = process.env.PORT || 5000;
-
 server.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
   console.log(`Server running on port ${PORT}`);

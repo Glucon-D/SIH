@@ -5,8 +5,8 @@ const logger = require("../utils/logger");
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
   headers: {
-    "HTTP-Referer": process.env.FRONTEND_URL || "http://localhost:5173",
-    "X-Title": process.env.APP_NAME || "Digital Krishi Officer",
+    "HTTP-Referer": process.env.FRONTEND_URL || "https://sih.aysh.me",
+    "X-Title": process.env.APP_NAME || "SIH 2025",
   },
 });
 
