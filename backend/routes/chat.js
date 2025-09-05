@@ -2,6 +2,7 @@ const express = require('express');
 const { body } = require('express-validator');
 const chatController = require('../controllers/chatController');
 const { authenticateToken } = require('../middleware/auth');
+const { uploadAudio, handleUploadError } = require('../middleware/audioUpload');
 
 const router = express.Router();
 
@@ -41,6 +42,7 @@ const streamChatValidation = [
 // Routes
 router.post('/send', authenticateToken, sendMessageValidation, chatController.sendMessage);
 router.post('/stream', authenticateToken, streamChatValidation, chatController.streamChat);
+router.post('/transcribe', authenticateToken, uploadAudio, handleUploadError, chatController.transcribeAudio);
 router.get('/history/:threadId', authenticateToken, chatController.getChatHistory);
 router.delete('/message/:messageId', authenticateToken, chatController.deleteMessage);
 router.put('/message/:messageId', authenticateToken, chatController.editMessage);

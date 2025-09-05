@@ -1,13 +1,15 @@
 import { useState, useRef, useEffect, useCallback, memo } from "react";
-import { Send, Loader, User, Bot, Image, Paperclip } from "lucide-react";
+import { Send, Loader, User, Bot, Image, Paperclip, Mic } from "lucide-react";
 import MarkdownRenderer from "./MarkdownRenderer";
 import { useChat } from "../../context/ChatContext";
 import { useAuth } from "../../context/AuthContext";
 import { format } from "date-fns";
+import VoiceRecorder from "./VoiceRecorder";
 
 const ChatInterface = () => {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [autoSendVoice, setAutoSendVoice] = useState(false);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
 
@@ -69,6 +71,36 @@ const ChatInterface = () => {
     },
     [handleSubmit]
   );
+
+  // Handle voice transcription
+  const handleVoiceTranscription = useCallback((transcription, language, autoSend = false) => {
+    // Add transcribed text to the current message
+    const newText = transcription.trim();
+    setMessage(newText);
+
+    // Use setTimeout to ensure the state update has been processed
+    setTimeout(() => {
+      // Trigger textarea resize
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+        textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+
+        // Focus and position cursor at the end
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(newText.length, newText.length);
+
+        // Scroll into view if needed
+        textareaRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // Auto-send if requested
+      if (autoSend && newText.trim()) {
+        setTimeout(() => {
+          handleSubmit({ preventDefault: () => {} });
+        }, 500); // Small delay to let user see the transcription
+      }
+    }, 100);
+  }, [handleSubmit]);
 
   // Pre-written questions for new conversations
   const suggestedQuestions = [
@@ -328,6 +360,13 @@ const ChatInterface = () => {
             />
           </div>
 
+          {/* Voice Recorder */}
+          <VoiceRecorder
+            onTranscription={handleVoiceTranscription}
+            disabled={isStreaming}
+            autoSend={autoSendVoice}
+          />
+
           {/* Send Button */}
           <button
             type="submit"
@@ -342,10 +381,23 @@ const ChatInterface = () => {
           </button>
         </form>
 
-        {/* Helper Text */}
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          Press Enter to send, Shift+Enter for new line
-        </p>
+        {/* Helper Text and Voice Settings */}
+        <div className="flex items-center justify-between mt-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Press Enter to send, Shift+Enter for new line
+          </p>
+
+          {/* Auto-send voice toggle */}
+          <label className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
+            <input
+              type="checkbox"
+              checked={autoSendVoice}
+              onChange={(e) => setAutoSendVoice(e.target.checked)}
+              className="w-3 h-3 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <span>Auto-send voice messages</span>
+          </label>
+        </div>
       </div>
     </div>
   );

@@ -204,4 +204,18 @@ export const chatService = {
       throw error;
     }
   },
+
+  // Transcribe audio
+  transcribeAudio: async (audioBlob) => {
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+
+      const response = await apiService.upload('/chat/transcribe', formData);
+      return response.data;
+    } catch (error) {
+      console.error("Transcription error:", error);
+      throw error;
+    }
+  },
 };

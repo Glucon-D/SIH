@@ -5,6 +5,7 @@ const { generateThreadTitle } = require("../config/aiConfig");
 const Message = require("../models/Message");
 const Thread = require("../models/Thread");
 const logger = require("../utils/logger");
+const OpenAI = require("openai");
 
 // Send a message
 const sendMessage = async (req, res) => {
@@ -537,6 +538,78 @@ const removeReaction = async (req, res) => {
   }
 };
 
+// Transcribe audio using OpenAI Whisper
+const transcribeAudio = async (req, res) => {
+  try {
+    // Check if audio file is provided
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No audio file provided"
+      });
+    }
+
+    // Initialize OpenAI client
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+
+    // Create a File object from the buffer
+    const audioFile = new File([req.file.buffer], 'audio.webm', {
+      type: req.file.mimetype
+    });
+
+    logger.info(`Transcribing audio file: ${req.file.originalname}, size: ${req.file.size} bytes`);
+
+    // Call Whisper API for transcription
+    const transcription = await openai.audio.transcriptions.create({
+      file: audioFile,
+      model: "whisper-1",
+      // Remove language parameter to enable auto-detection
+      response_format: "verbose_json" // Get detailed response with language detection
+    });
+
+    logger.info(`Transcription completed. Detected language: ${transcription.language}`);
+
+    res.json({
+      success: true,
+      transcription: transcription.text,
+      language: transcription.language,
+      duration: transcription.duration
+    });
+
+  } catch (error) {
+    logger.error(`Transcription error: ${error.message}`);
+
+    // Handle specific OpenAI API errors
+    if (error.status === 400) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid audio file or format"
+      });
+    }
+
+    if (error.status === 401) {
+      return res.status(500).json({
+        success: false,
+        message: "OpenAI API authentication failed"
+      });
+    }
+
+    if (error.status === 413) {
+      return res.status(400).json({
+        success: false,
+        message: "Audio file too large"
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to transcribe audio"
+    });
+  }
+};
+
 module.exports = {
   sendMessage,
   streamChat,
@@ -545,4 +618,5 @@ module.exports = {
   editMessage,
   addReaction,
   removeReaction,
+  transcribeAudio,
 };
