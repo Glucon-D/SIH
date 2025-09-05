@@ -1,7 +1,6 @@
-const axios = require("axios");
 const { generateText } = require("ai");
 const { getModel } = require("../config/openrouter");
-const { WEATHER_API_URL, WEATHER_API_KEY } = require("../config/weatherConfig");
+const weatherService = require("../services/weatherService");
 
 const getNudges = async (req, res) => {
   try {
@@ -12,12 +11,16 @@ const getNudges = async (req, res) => {
         .json({ error: "Please provide crop and location" });
     }
 
-    // 1. Fetch weather data
-    const weatherRes = await axios.get(WEATHER_API_URL, {
-      params: { q: location, appid: WEATHER_API_KEY, units: "metric" },
-    });
-    const weatherData = weatherRes.data;
-    const temp = weatherData.main.temp;
+    // 1. Fetch weather data using shared weather service
+    const weatherData = await weatherService.getWeatherForNudges(location);
+    
+    if (!weatherData) {
+      return res
+        .status(400)
+        .json({ error: "Unable to fetch weather data for the provided location" });
+    }
+
+    const temp = weatherData.temp;
     const humidity = weatherData.main.humidity;
     const conditions = weatherData.weather[0].description;
 

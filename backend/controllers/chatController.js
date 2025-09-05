@@ -4,6 +4,7 @@ const { getModel } = require("../config/openrouter");
 const Message = require("../models/Message");
 const Thread = require("../models/Thread");
 const logger = require("../utils/logger");
+const contextService = require("../services/contextService");
 
 // Send a message
 const sendMessage = async (req, res) => {
@@ -128,22 +129,47 @@ const streamChat = async (req, res) => {
       });
     }
 
-    // Get conversation history
-    const conversationHistory = await Message.getConversationHistory(threadId);
+    // Build comprehensive context for personalized AI response
+    logger.info(`Building context for user ${userId} in thread ${threadId}`);
+    const context = await contextService.buildCompleteContext(userId, threadId, userMessage);
+    
+    // Log context availability for debugging
+    logger.info(`Context built - User: ${!!context.user}, Weather: ${!!context.weather}, Conversation: ${!!context.conversation}, Has Error: ${!!context.metadata.error}`);
 
-    // Prepare messages for AI
+    // Get conversation history (limit to recent messages to save tokens)
+    const conversationHistory = await Message.getConversationHistory(threadId, 15);
+
+    // Format context for AI prompt
+    const contextPrompt = contextService.formatContextForAI(context);
+
+    // Prepare enhanced messages for AI with context
     const messages = [
       {
         role: "system",
-        content: `You are a Digital Krishi Officer, an AI-powered agricultural advisory assistant. You help farmers with:
+        content: `You are a Digital Krishi Officer, an AI-powered agricultural advisory assistant designed specifically for farmers. You help farmers with:
         - Pest and disease management
-        - Weather-related decisions
-        - Input optimization (fertilizers, pesticides)
+        - Weather-related agricultural decisions  
+        - Input optimization (fertilizers, pesticides, seeds)
         - Government subsidies and schemes
-        - Market trends and pricing
+        - Market trends and pricing information
         - Crop planning and seasonal guidance
+        - Irrigation and water management
+        - Soil health and nutrition
         
-        Provide helpful, accurate, and practical advice. Be concise but thorough. If you're unsure about something, recommend consulting with local agricultural experts.`,
+        IMPORTANT INSTRUCTIONS:
+        - Always consider the farmer's location, weather conditions, and experience level
+        - Provide practical, actionable advice that can be implemented immediately
+        - Use simple, clear language appropriate for the farmer's experience level
+        - Include weather considerations in your recommendations when relevant
+        - Suggest seasonal activities appropriate for the current time of year
+        - If you're unsure about region-specific advice, recommend consulting local agricultural experts
+        - Be empathetic and supportive - farming is challenging work
+        
+        ${contextPrompt}
+        
+        Current farmer's question: "${userMessage}"
+        
+        Provide helpful, accurate, and practical advice based on all the context provided above.`,
       },
       ...conversationHistory.map((msg) => ({
         role: msg.role,
@@ -167,7 +193,7 @@ const streamChat = async (req, res) => {
     // Get AI model
     const aiModel = getModel(model);
 
-    // Create assistant message placeholder
+    // Create assistant message placeholder with context metadata
     const assistantMsg = new Message({
       threadId,
       userId,
@@ -176,6 +202,16 @@ const streamChat = async (req, res) => {
       status: "processing",
       metadata: {
         model: model || "google/gemini-2.5-flash-lite",
+        hasContext: true,
+        contextMetadata: {
+          hasUserData: context.metadata.hasUserData,
+          hasWeatherData: context.metadata.hasWeatherData,
+          hasConversationData: context.metadata.hasConversationData,
+          contextBuiltAt: context.metadata.contextBuiltAt,
+          userLocation: context.user?.location || 'Not specified',
+          currentSeason: context.seasonal?.currentSeason || 'unknown',
+          weatherConditions: context.weather?.conditions || 'Not available'
+        }
       },
     });
     await assistantMsg.save();
@@ -273,13 +309,19 @@ const streamChat = async (req, res) => {
       }
 
       logger.info(
-        `AI stream completed for thread ${threadId}, total response length: ${fullResponse.length}`
+        `AI stream completed for thread ${threadId}, total response length: ${fullResponse.length}, context used: ${!!context.user || !!context.weather}`
       );
 
-      // Update assistant message with full response
+      // Update assistant message with full response and context info
       assistantMsg.content = fullResponse;
       assistantMsg.status = "completed";
       assistantMsg.metadata.processingTime = Date.now() - startTime;
+      assistantMsg.metadata.contextUsed = {
+        userContext: !!context.user,
+        weatherContext: !!context.weather,
+        conversationContext: !!context.conversation,
+        totalContextSources: [context.user, context.weather, context.conversation].filter(Boolean).length
+      };
 
       // Get usage info if available
       if (result.usage) {
@@ -308,7 +350,12 @@ const streamChat = async (req, res) => {
         });
       }
 
-      logger.info(`AI response generated for thread ${threadId}`);
+      logger.info(`AI response generated for thread ${threadId} with enhanced context`);
+      
+      // Pre-load weather data for future requests (async, don't wait)
+      contextService.preloadUserWeather(userId).catch(err => 
+        logger.debug(`Weather pre-load failed for user ${userId}: ${err.message}`)
+      );
     } catch (aiError) {
       logger.error(`AI streaming error: ${aiError.message}`);
 
@@ -504,6 +551,54 @@ const removeReaction = async (req, res) => {
   }
 };
 
+// Get context information for debugging (useful for development)
+const getContextInfo = async (req, res) => {
+  try {
+    const { threadId } = req.params;
+    const userId = req.user._id;
+
+    // Verify thread exists and belongs to user
+    const thread = await Thread.findOne({ _id: threadId, userId });
+    if (!thread) {
+      return res.status(404).json({
+        success: false,
+        message: "Thread not found",
+      });
+    }
+
+    // Build context for this user/thread
+    const context = await contextService.buildCompleteContext(userId, threadId, "Debug context request");
+    
+    // Get cache statistics
+    const cacheStats = contextService.getCacheStats();
+
+    res.json({
+      success: true,
+      data: {
+        context: {
+          user: context.user,
+          weather: context.weather,
+          seasonal: context.seasonal,
+          conversation: {
+            category: context.conversation?.threadCategory,
+            messageCount: context.conversation?.messageCount,
+            urgencyLevel: context.conversation?.urgencyLevel
+          },
+          metadata: context.metadata
+        },
+        cacheStats,
+        formattedPrompt: contextService.formatContextForAI(context)
+      }
+    });
+  } catch (error) {
+    logger.error(`Get context info error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get context information",
+    });
+  }
+};
+
 module.exports = {
   sendMessage,
   streamChat,
@@ -512,4 +607,5 @@ module.exports = {
   editMessage,
   addReaction,
   removeReaction,
+  getContextInfo,
 };
