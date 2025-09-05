@@ -1,36 +1,48 @@
-import { useState, useEffect } from 'react';
-import { X, MapPin, Thermometer, Droplets, Cloud, Loader, AlertCircle, Lightbulb, Zap } from 'lucide-react';
-import { nudgesService } from '../../services/nudges';
+import { useState, useEffect } from "react";
+import {
+  X,
+  MapPin,
+  Thermometer,
+  Droplets,
+  Cloud,
+  Loader,
+  AlertCircle,
+  Lightbulb,
+  Zap,
+} from "lucide-react";
+import { nudgesService } from "../../services/nudges";
 
 const NudgesModal = ({ isOpen, onClose }) => {
-  const [step, setStep] = useState('crop-selection'); // 'crop-selection', 'loading', 'results', 'error'
-  const [selectedCrop, setSelectedCrop] = useState('');
+  const [step, setStep] = useState("crop-selection"); // 'crop-selection', 'loading', 'results', 'error'
+  const [selectedCrop, setSelectedCrop] = useState("");
   const [location, setLocation] = useState(null);
   const [nudgesData, setNudgesData] = useState(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
   const crops = nudgesService.getStaticCrops();
 
-  // Reset state when modal opens
+  // Reset state when modal opens and auto-fetch location
   useEffect(() => {
     if (isOpen) {
-      setStep('crop-selection');
-      setSelectedCrop('');
+      setStep("crop-selection");
+      setSelectedCrop("");
       setLocation(null);
       setNudgesData(null);
-      setError('');
+      setError("");
+      // Automatically start location detection
+      handleGetLocation();
     }
   }, [isOpen]);
 
   const handleGetLocation = async () => {
     setIsLoadingLocation(true);
-    setError('');
-    
+    setError("");
+
     try {
       const coords = await nudgesService.getCurrentLocation();
       const locationString = await nudgesService.coordinatesToLocationString(
-        coords.latitude, 
+        coords.latitude,
         coords.longitude
       );
       setLocation({ coords, locationString });
@@ -44,16 +56,21 @@ const NudgesModal = ({ isOpen, onClose }) => {
   const handleGetNudges = async () => {
     if (!selectedCrop || !location) return;
 
-    setStep('loading');
-    setError('');
+    setStep("loading");
+    setError("");
 
     try {
-      const data = await nudgesService.getNudges(selectedCrop, location.locationString);
+      const data = await nudgesService.getNudges(
+        selectedCrop,
+        location.locationString
+      );
       setNudgesData(data);
-      setStep('results');
+      setStep("results");
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to get nudges. Please try again.');
-      setStep('error');
+      setError(
+        err.response?.data?.error || "Failed to get nudges. Please try again."
+      );
+      setStep("error");
     }
   };
 
@@ -62,8 +79,8 @@ const NudgesModal = ({ isOpen, onClose }) => {
   };
 
   const handleTryAgain = () => {
-    setStep('crop-selection');
-    setError('');
+    setStep("crop-selection");
+    setError("");
     setNudgesData(null);
   };
 
@@ -72,11 +89,11 @@ const NudgesModal = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
         onClick={handleClose}
       />
-      
+
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
@@ -91,7 +108,8 @@ const NudgesModal = ({ isOpen, onClose }) => {
                   AI Farming Nudges
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Get personalized farming tips based on your location and weather
+                  Get personalized farming tips based on your location and
+                  weather
                 </p>
               </div>
             </div>
@@ -105,7 +123,7 @@ const NudgesModal = ({ isOpen, onClose }) => {
 
           {/* Content */}
           <div className="p-6">
-            {step === 'crop-selection' && (
+            {step === "crop-selection" && (
               <div className="space-y-6">
                 {/* Crop Selection */}
                 <div>
@@ -119,8 +137,8 @@ const NudgesModal = ({ isOpen, onClose }) => {
                         onClick={() => setSelectedCrop(crop.id)}
                         className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                           selectedCrop === crop.id
-                            ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
-                            : 'border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                            ? "border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300"
+                            : "border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                         }`}
                       >
                         <div className="text-2xl mb-2">{crop.icon}</div>
@@ -137,20 +155,36 @@ const NudgesModal = ({ isOpen, onClose }) => {
                   </label>
                   {!location ? (
                     <div className="space-y-2">
-                      <button
-                        onClick={handleGetLocation}
-                        disabled={isLoadingLocation}
-                        className="flex items-center space-x-2 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors disabled:opacity-50 w-full"
-                      >
-                        {isLoadingLocation ? (
+                      {isLoadingLocation ? (
+                        <div className="flex items-center space-x-2 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
                           <Loader className="w-5 h-5 animate-spin text-blue-600" />
-                        ) : (
+                          <span className="text-blue-700 dark:text-blue-300">
+                            Detecting your location...
+                          </span>
+                        </div>
+                      ) : error ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl">
+                            <AlertCircle className="w-5 h-5 text-red-600" />
+                            <span className="text-red-700 dark:text-red-300">
+                              {error}
+                            </span>
+                          </div>
+                          <button
+                            onClick={handleGetLocation}
+                            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                          >
+                            Retry location
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
                           <MapPin className="w-5 h-5 text-blue-600" />
-                        )}
-                        <span className="text-blue-700 dark:text-blue-300">
-                          {isLoadingLocation ? 'Getting location...' : 'Get my location'}
-                        </span>
-                      </button>
+                          <span className="text-blue-700 dark:text-blue-300">
+                            Preparing location...
+                          </span>
+                        </div>
+                      )}
 
                       {nudgesService.isLocationAccessDenied() && (
                         <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-xl">
@@ -178,7 +212,9 @@ const NudgesModal = ({ isOpen, onClose }) => {
                         <div className="flex items-center space-x-2">
                           <MapPin className="w-5 h-5 text-green-600" />
                           <span className="text-green-700 dark:text-green-300">
-                            Location obtained ({location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)})
+                            Location obtained (
+                            {location.coords.latitude.toFixed(4)},{" "}
+                            {location.coords.longitude.toFixed(4)})
                           </span>
                         </div>
                         <button
@@ -191,8 +227,14 @@ const NudgesModal = ({ isOpen, onClose }) => {
 
                       {location.coords.source && (
                         <div className="text-xs text-gray-500 dark:text-gray-400 px-2">
-                          Source: {location.coords.source === 'gps' ? 'GPS' : 'IP Address'}
-                          {location.coords.accuracy && ` • Accuracy: ~${Math.round(location.coords.accuracy)}m`}
+                          Source:{" "}
+                          {location.coords.source === "gps"
+                            ? "GPS"
+                            : "IP Address"}
+                          {location.coords.accuracy &&
+                            ` • Accuracy: ~${Math.round(
+                              location.coords.accuracy
+                            )}m`}
                         </div>
                       )}
                     </div>
@@ -202,7 +244,9 @@ const NudgesModal = ({ isOpen, onClose }) => {
                 {error && (
                   <div className="flex items-center space-x-2 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl">
                     <AlertCircle className="w-5 h-5 text-red-600" />
-                    <span className="text-red-700 dark:text-red-300">{error}</span>
+                    <span className="text-red-700 dark:text-red-300">
+                      {error}
+                    </span>
                   </div>
                 )}
 
@@ -217,19 +261,20 @@ const NudgesModal = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {step === 'loading' && (
+            {step === "loading" && (
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader className="w-12 h-12 animate-spin text-green-600 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   Generating AI Nudges
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 text-center">
-                  Analyzing weather conditions and generating personalized farming tips...
+                  Analyzing weather conditions and generating personalized
+                  farming tips...
                 </p>
               </div>
             )}
 
-            {step === 'results' && nudgesData && (
+            {step === "results" && nudgesData && (
               <div className="space-y-6">
                 {/* Weather Info */}
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-700">
@@ -240,21 +285,27 @@ const NudgesModal = ({ isOpen, onClose }) => {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center">
                       <Thermometer className="w-6 h-6 text-red-500 mx-auto mb-1" />
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Temperature</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Temperature
+                      </div>
                       <div className="font-semibold text-gray-900 dark:text-white">
                         {nudgesData.weather.temperature}
                       </div>
                     </div>
                     <div className="text-center">
                       <Droplets className="w-6 h-6 text-blue-500 mx-auto mb-1" />
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Humidity</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Humidity
+                      </div>
                       <div className="font-semibold text-gray-900 dark:text-white">
                         {nudgesData.weather.humidity}
                       </div>
                     </div>
                     <div className="text-center">
                       <Cloud className="w-6 h-6 text-gray-500 mx-auto mb-1" />
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Conditions</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Conditions
+                      </div>
                       <div className="font-semibold text-gray-900 dark:text-white capitalize">
                         {nudgesData.weather.conditions}
                       </div>
@@ -266,7 +317,8 @@ const NudgesModal = ({ isOpen, onClose }) => {
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
                     <Lightbulb className="w-5 h-5 mr-2 text-yellow-500" />
-                    AI Farming Tips for {crops.find(c => c.id === selectedCrop)?.name}
+                    AI Farming Tips for{" "}
+                    {crops.find((c) => c.id === selectedCrop)?.name}
                   </h3>
                   <div className="space-y-3">
                     {nudgesData.nudges.map((nudge, index) => (
@@ -305,7 +357,7 @@ const NudgesModal = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {step === 'error' && (
+            {step === "error" && (
               <div className="flex flex-col items-center justify-center py-12">
                 <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">

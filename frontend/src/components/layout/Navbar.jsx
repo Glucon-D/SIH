@@ -13,11 +13,12 @@ import {
   Zap,
   User,
 } from "lucide-react";
-import { Trans, t } from '@lingui/macro';
+import { t } from "@lingui/macro";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import NudgesModal from "../nudges/NudgesModal";
 import LanguageSelector from "../LanguageSelector";
+import WeatherWidget from "../weather/WeatherWidget";
 import { ChevronRight } from "lucide-react";
 
 const Navbar = () => {
@@ -149,6 +150,11 @@ const Navbar = () => {
               {/* Language Selector */}
               <div className="hidden sm:block">
                 <LanguageSelector />
+              </div>
+
+              {/* Weather - today's icon opens 7-day forecast */}
+              <div className="hidden sm:block">
+                <WeatherWidget />
               </div>
 
               {/* Modern Theme toggle - Hidden on mobile to save space */}

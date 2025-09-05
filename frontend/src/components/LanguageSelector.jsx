@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Globe } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext';
+import { useState, useRef, useEffect } from "react";
+import { ChevronDown, Globe } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 
 const LanguageSelector = () => {
   const { locale, languages, changeLanguage } = useLanguage();
@@ -15,11 +15,11 @@ const LanguageSelector = () => {
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
 
@@ -39,10 +39,12 @@ const LanguageSelector = () => {
           <Globe className="w-5 h-5" />
         </div>
         <span className="hidden sm:inline text-sm font-medium">
-          {languages[locale].flag} {languages[locale].label}
+          {languages[locale].label}
         </span>
-        <ChevronDown 
-          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+        <ChevronDown
+          className={`w-4 h-4 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
         />
       </button>
 
@@ -54,8 +56,8 @@ const LanguageSelector = () => {
               onClick={() => handleLanguageChange(code)}
               className={`flex items-center w-full px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
                 locale === code
-                  ? 'text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-900/20'
-                  : 'text-gray-700 dark:text-gray-300'
+                  ? "text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-900/20"
+                  : "text-gray-700 dark:text-gray-300"
               }`}
             >
               <span className="text-lg mr-3">{language.flag}</span>
