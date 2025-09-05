@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const { streamText } = require("ai");
 const { getModel } = require("../config/openrouter");
+const { generateThreadTitle } = require("../config/aiConfig");
 const Message = require("../models/Message");
 const Thread = require("../models/Thread");
 const logger = require("../utils/logger");
@@ -126,6 +127,38 @@ const streamChat = async (req, res) => {
       io.to(threadId).emit("new_message", {
         message: userMsg,
       });
+    }
+
+    // Check if this is the first user message and update thread title if needed
+    const messageCount = await Message.countDocuments({
+      threadId,
+      role: "user",
+    });
+    if (
+      messageCount === 1 &&
+      (thread.title === "New Chat" || thread.title.startsWith("New Chat"))
+    ) {
+      try {
+        // Generate a better title based on the user's first message
+        const newTitle = await generateThreadTitle(userMessage);
+
+        // Update the thread title
+        thread.title = newTitle;
+        await thread.save();
+
+        // Emit thread update to socket for real-time UI update
+        if (io) {
+          io.to(threadId).emit("thread_updated", {
+            threadId: threadId,
+            title: newTitle,
+          });
+        }
+
+        logger.info(`Thread title updated: ${threadId} -> "${newTitle}"`);
+      } catch (error) {
+        logger.error(`Failed to update thread title: ${error.message}`);
+        // Continue with the chat even if title update fails
+      }
     }
 
     // Get conversation history

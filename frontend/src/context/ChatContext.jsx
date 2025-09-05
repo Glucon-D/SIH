@@ -34,6 +34,7 @@ const actionTypes = {
   SET_THREADS: "SET_THREADS",
   ADD_THREAD: "ADD_THREAD",
   UPDATE_THREAD: "UPDATE_THREAD",
+  UPDATE_THREAD_TITLE: "UPDATE_THREAD_TITLE",
   DELETE_THREAD: "DELETE_THREAD",
   SET_CURRENT_THREAD: "SET_CURRENT_THREAD",
   SET_MESSAGES: "SET_MESSAGES",
@@ -70,6 +71,20 @@ const chatReducer = (state, action) => {
         currentThread:
           state.currentThread?._id === action.payload._id
             ? { ...state.currentThread, ...action.payload }
+            : state.currentThread,
+      };
+
+    case actionTypes.UPDATE_THREAD_TITLE:
+      return {
+        ...state,
+        threads: state.threads.map((thread) =>
+          thread._id === action.payload.threadId
+            ? { ...thread, title: action.payload.title }
+            : thread
+        ),
+        currentThread:
+          state.currentThread?._id === action.payload.threadId
+            ? { ...state.currentThread, title: action.payload.title }
             : state.currentThread,
       };
 
@@ -245,7 +260,15 @@ export const ChatProvider = ({ children }) => {
 
       // Thread events
       socket.on("thread_updated", (data) => {
-        dispatch({ type: actionTypes.UPDATE_THREAD, payload: data.thread });
+        // Handle both old format (data.thread) and new format (data.threadId, data.title)
+        if (data.thread) {
+          dispatch({ type: actionTypes.UPDATE_THREAD, payload: data.thread });
+        } else if (data.threadId && data.title) {
+          dispatch({
+            type: actionTypes.UPDATE_THREAD_TITLE,
+            payload: { threadId: data.threadId, title: data.title },
+          });
+        }
       });
 
       return () => {
@@ -414,8 +437,7 @@ export const ChatProvider = ({ children }) => {
         let actualThreadId = threadId;
         if (!actualThreadId) {
           const newThread = await createThread({
-            title:
-              content.substring(0, 50) + (content.length > 50 ? "..." : ""),
+            title: "New Chat",
             category: "general_query",
           });
 
