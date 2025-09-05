@@ -10,9 +10,17 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "extract": "lingui extract",
+    "compile": "lingui compile && node scripts/fix-messages.js",
+    "i18n": "npm run extract && npm run compile"
   },
   "dependencies": {
+    "@lingui/cli": "^5.4.1",
+    "@lingui/core": "^5.4.1",
+    "@lingui/macro": "^5.4.1",
+    "@lingui/react": "^5.4.1",
+    "@lingui/vite-plugin": "^5.4.1",
     "@tailwindcss/vite": "^4.1.12",
     "axios": "^1.6.2",
     "clsx": "^2.0.0",

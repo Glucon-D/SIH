@@ -1,0 +1,302 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2025-09-05 21:27+0530\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: hi\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: src/pages/Home.jsx:150
+msgid "How It Works"
+msgstr "यह कैसे काम करता है"
+
+#: src/pages/About.jsx:47
+msgid "Farmer-first approach, accuracy in advice, cultural sensitivity, continuous learning, and bridging the gap between traditional wisdom and modern technology."
+msgstr "किसान-प्राथमिकता दृष्टिकोण, सलाह में सटीकता, सांस्कृतिक संवेदनशीलता, निरंतर सीखना, और पारंपरिक ज्ञान और आधुनिक तकनीक के बीच अंतर को पाटना।"
+
+#: src/pages/About.jsx:83
+msgid "By leveraging advanced language models and comprehensive agricultural databases, we've created a digital assistant that can provide instant, accurate, and contextually relevant advice on everything from pest management to government schemes."
+msgstr "उन्नत भाषा मॉडल और व्यापक कृषि डेटाबेस का लाभ उठाकर, हमने एक डिजिटल सहायक बनाया है जो कीट प्रबंधन से लेकर सरकारी योजनाओं तक सब कुछ पर तत्काल, सटीक और प्रासंगिक रूप से संबंधित सलाह प्रदान कर सकता है।"
+
+#: src/pages/Home.jsx:120
+msgid "Our AI-powered platform combines cutting-edge technology with agricultural expertise to provide farmers with the best possible guidance."
+msgstr "हमारा AI-संचालित प्लेटफॉर्म अत्याधुनिक तकनीक को कृषि विशेषज्ञता के साथ जोड़कर किसानों को सर्वोत्तम मार्गदर्शन प्रदान करता है।"
+
+#: src/pages/About.jsx:118
+#: src/pages/Home.jsx:47
+msgid "Satisfaction Rate"
+msgstr "संतुष्टि दर"
+
+#: src/pages/Home.jsx:29
+msgid "Get accurate, verified information from trusted agricultural sources and research institutes."
+msgstr "विश्वसनीय कृषि स्रोतों और अनुसंधान संस्थानों से सटीक, सत्यापित जानकारी प्राप्त करें।"
+
+#: src/pages/About.jsx:37
+msgid "To democratize access to agricultural expertise through AI-powered advisory services, making expert farming knowledge available to every farmer, anytime, anywhere."
+msgstr "AI-संचालित सलाहकार सेवाओं के माध्यम से कृषि विशेषज्ञता तक पहुंच का लोकतंत्रीकरण करना, विशेषज्ञ कृषि ज्ञान को हर किसान के लिए, कभी भी, कहीं भी उपलब्ध कराना।"
+
+#: src/pages/About.jsx:77
+msgid "Digital Krishi Officer was born from a simple observation: farmers across India, particularly in Kerala, face significant challenges in accessing timely expert agricultural advice. Traditional extension services, while valuable, are often overburdened and cannot provide 24/7 support."
+msgstr "डिजिटल कृषि अधिकारी का जन्म एक सरल अवलोकन से हुआ: भारत भर के किसान, विशेषकर केरल में, समय पर विशेषज्ञ कृषि सलाह प्राप्त करने में महत्वपूर्ण चुनौतियों का सामना करते हैं। पारंपरिक विस्तार सेवाएं, जबकि मूल्यवान हैं, अक्सर अधिक भारित होती हैं और 24/7 सहायता प्रदान नहीं कर सकतीं।"
+
+#: src/components/layout/Navbar.jsx:84
+msgid "Dashboard"
+msgstr "डैशबोर्ड"
+
+#: src/pages/Home.jsx:39
+msgid "Communicate in your native language with full Malayalam language support."
+msgstr "पूर्ण हिंदी भाषा समर्थन के साथ अपनी मातृभाषा में संवाद करें।"
+
+#: src/pages/About.jsx:58
+msgid "About Digital Krishi Officer"
+msgstr "डिजिटल कृषि अधिकारी के बारे में"
+
+#: src/pages/About.jsx:231
+msgid "Real-time Processing"
+msgstr "रियल-टाइम प्रोसेसिंग"
+
+#: src/pages/Home.jsx:34
+msgid "Receive instant answers to your farming questions with our fast AI processing."
+msgstr "हमारी तेज़ AI प्रसंस्करण के साथ अपने कृषि प्रश्नों का तुरंत उत्तर प्राप्त करें।"
+
+#: src/pages/About.jsx:17
+msgid "Specializes in natural language processing and machine learning for agricultural applications."
+msgstr "कृषि अनुप्रयोगों के लिए प्राकृतिक भाषा प्रसंस्करण और मशीन लर्निंग में विशेषज्ञ।"
+
+#: src/pages/Home.jsx:178
+msgid "Ask your farming questions in text or voice, upload images of crops or pests."
+msgstr "अपने कृषि प्रश्न टेक्स्ट या आवाज़ में पूछें, फसलों या कीटों की तस्वीरें अपलोड करें।"
+
+#: src/pages/Home.jsx:61
+msgid "AI-powered agricultural advisory system providing expert guidance on farming, pest management, weather decisions, and government schemes."
+msgstr "AI-संचालित कृषि सलाहकार प्रणाली जो खेती, कीट प्रबंधन, मौसम निर्णय और सरकारी योजनाओं पर विशेषज्ञ मार्गदर्शन प्रदान करती है।"
+
+#: src/pages/Home.jsx:190
+msgid "Receive instant AI-powered advice or connect with agricultural experts for complex issues."
+msgstr "तुरंत AI-संचालित सलाह प्राप्त करें या जटिल मुद्दों के लिए कृषि विशेषज्ञों से जुड़ें।"
+
+#: src/pages/Home.jsx:57
+msgid "Your Digital"
+msgstr "आपका डिजिटल"
+
+#: src/pages/Home.jsx:175
+msgid "Ask Questions"
+msgstr "प्रश्न पूछें"
+
+#: src/pages/Home.jsx:13
+msgid "AI-Powered Advisory"
+msgstr "AI-संचालित सलाहकार"
+
+#: src/pages/About.jsx:94
+#: src/pages/Home.jsx:44
+msgid "Farmers Helped"
+msgstr "किसानों की सहायता"
+
+#: src/pages/About.jsx:29
+msgid "Former Krishibhavan officer with deep understanding of farmer needs and government schemes."
+msgstr "पूर्व कृषि भवन अधिकारी जिन्हें किसानों की जरूरतों और सरकारी योजनाओं की गहरी समझ है।"
+
+#: src/pages/Home.jsx:204
+msgid "Join thousands of farmers who are already using Digital Krishi Officer to improve their farming practices and increase their yields."
+msgstr "हजारों किसानों के साथ जुड़ें जो पहले से ही डिजिटल कृषि अधिकारी का उपयोग करके अपनी कृषि पद्धतियों में सुधार कर रहे हैं और अपनी पैदावार बढ़ा रहे हैं।"
+
+#: src/pages/About.jsx:42
+msgid "To become the most trusted digital agricultural advisor in India, empowering farmers with knowledge and technology for sustainable and profitable farming."
+msgstr "भारत में सबसे विश्वसनीय डिजिटल कृषि सलाहकार बनना, किसानों को टिकाऊ और लाभदायक खेती के लिए ज्ञान और तकनीक के साथ सशक्त बनाना।"
+
+#: src/pages/About.jsx:41
+msgid "Vision"
+msgstr "दृष्टिकोण"
+
+#: src/pages/Home.jsx:33
+msgid "Quick Responses"
+msgstr "त्वरित प्रतिक्रियाएं"
+
+#: src/pages/About.jsx:216
+msgid "Powered by state-of-the-art language models that understand context and provide human-like responses in multiple languages."
+msgstr "अत्याधुनिक भाषा मॉडल द्वारा संचालित जो संदर्भ को समझते हैं और कई भाषाओं में मानव-जैसी प्रतिक्रियाएं प्रदान करते हैं।"
+
+#: src/pages/About.jsx:73
+msgid "Our Story"
+msgstr "हमारी कहानी"
+
+#: src/pages/About.jsx:168
+msgid "Our diverse team combines agricultural expertise with cutting-edge technology to serve farmers better."
+msgstr "हमारी विविध टीम किसानों की बेहतर सेवा के लिए कृषि विशेषज्ञता को अत्याधुनिक तकनीक के साथ जोड़ती है।"
+
+#: src/pages/About.jsx:234
+msgid "Fast, real-time processing ensures farmers get instant responses to their queries without delays."
+msgstr "तेज़, रियल-टाइम प्रोसेसिंग सुनिश्चित करती है कि किसानों को बिना देरी के अपने सवालों के तुरंत जवाब मिलें।"
+
+#: src/pages/Home.jsx:58
+msgid "Krishi Officer"
+msgstr "कृषि अधिकारी"
+
+#: src/pages/Home.jsx:24
+msgid "Access farming advice anytime, anywhere. Our AI assistant is always ready to help."
+msgstr "कभी भी, कहीं भी कृषि सलाह प्राप्त करें। हमारा AI सहायक हमेशा मदद के लिए तैयार है।"
+
+#: src/pages/About.jsx:135
+msgid "We're driven by a clear purpose and guided by strong values in everything we do."
+msgstr "हम एक स्पष्ट उद्देश्य से प्रेरित हैं और हमारे हर काम में मजबूत मूल्यों का मार्गदर्शन होता है।"
+
+#: src/pages/About.jsx:36
+msgid "Mission"
+msgstr "मिशन"
+
+#: src/pages/About.jsx:213
+msgid "Advanced Language Models"
+msgstr "उन्नत भाषा मॉडल"
+
+#: src/pages/About.jsx:27
+msgid "Extension Officer"
+msgstr "विस्तार अधिकारी"
+
+#: src/pages/About.jsx:110
+#: src/pages/Home.jsx:46
+msgid "Support Available"
+msgstr "सहायता उपलब्ध"
+
+#: src/pages/Home.jsx:78
+msgid "Get Started"
+msgstr "शुरुआत करें"
+
+#: src/pages/Home.jsx:69
+msgid "Go to Dashboard"
+msgstr "डैशबोर्ड पर जाएं"
+
+#: src/pages/Home.jsx:153
+msgid "Getting expert agricultural advice has never been easier. Follow these simple steps."
+msgstr "विशेषज्ञ कृषि सलाह प्राप्त करना कभी इतना आसान नहीं था। इन सरल चरणों का पालन करें।"
+
+#: src/pages/About.jsx:132
+msgid "Our Mission, Vision & Values"
+msgstr "हमारा मिशन, दृष्टिकोण और मूल्य"
+
+#: src/pages/About.jsx:15
+msgid "AI/ML Engineer"
+msgstr "AI/ML इंजीनियर"
+
+#: src/pages/About.jsx:46
+msgid "Values"
+msgstr "मूल्य"
+
+#: src/pages/About.jsx:165
+msgid "Meet Our Team"
+msgstr "हमारी टीम से मिलें"
+
+#: src/pages/Home.jsx:19
+msgid "Connect with agricultural experts and extension officers when you need specialized guidance."
+msgstr "जब आपको विशेष मार्गदर्शन की आवश्यकता हो तो कृषि विशेषज्ञों और विस्तार अधिकारियों से जुड़ें।"
+
+#: src/pages/About.jsx:21
+msgid "Full Stack Developer"
+msgstr "फुल स्टैक डेवलपर"
+
+#: src/pages/Home.jsx:38
+msgid "Malayalam Support"
+msgstr "हिंदी समर्थन"
+
+#: src/pages/Home.jsx:211
+msgid "Start Your Journey"
+msgstr "अपनी यात्रा शुरू करें"
+
+#: src/pages/Home.jsx:201
+msgid "Ready to Transform Your Farming?"
+msgstr "अपनी खेती को बदलने के लिए तैयार हैं?"
+
+#: src/components/layout/Navbar.jsx:81
+msgid "Home"
+msgstr "होम"
+
+#: src/pages/Home.jsx:187
+msgid "Get Expert Advice"
+msgstr "विशेषज्ञ सलाह लें"
+
+#: src/components/layout/Navbar.jsx:83
+msgid "Contact"
+msgstr "संपर्क"
+
+#: src/pages/Home.jsx:117
+msgid "Why Choose Digital Krishi Officer?"
+msgstr "डिजिटल कृषि अधिकारी क्यों चुनें?"
+
+#: src/pages/Home.jsx:163
+msgid "Sign Up"
+msgstr "साइन अप करें"
+
+#: src/pages/About.jsx:225
+msgid "Comprehensive database of agricultural information from trusted sources, research institutes, and expert knowledge."
+msgstr "विश्वसनीय स्रोतों, अनुसंधान संस्थानों और विशेषज्ञ ज्ञान से कृषि जानकारी का व्यापक डेटाबेस।"
+
+#: src/pages/Home.jsx:85
+msgid "Sign In"
+msgstr "साइन इन करें"
+
+#: src/pages/Home.jsx:166
+msgid "Create your account and set up your farming profile with crop types and location."
+msgstr "अपना खाता बनाएं और फसल के प्रकार और स्थान के साथ अपनी कृषि प्रोफ़ाइल सेट करें।"
+
+#: src/pages/Home.jsx:23
+msgid "24/7 Availability"
+msgstr "24/7 उपलब्धता"
+
+#: src/pages/Home.jsx:18
+msgid "Expert Network"
+msgstr "विशेषज्ञ नेटवर्क"
+
+#: src/pages/About.jsx:203
+msgid "Our Technology"
+msgstr "हमारी तकनीक"
+
+#: src/pages/About.jsx:80
+msgid "Our team of agricultural experts, AI engineers, and developers came together to create an intelligent system that combines the power of artificial intelligence with deep agricultural knowledge. We believe that every farmer deserves access to expert advice, regardless of their location or the time of day."
+msgstr "कृषि विशेषज्ञों, AI इंजीनियरों और डेवलपर्स की हमारी टीम एक बुद्धिमान प्रणाली बनाने के लिए एक साथ आई है जो कृत्रिम बुद्धिमत्ता की शक्ति को गहरे कृषि ज्ञान के साथ जोड़ती है। हमारा मानना है कि हर किसान को विशेषज्ञ सलाह का अधिकार है, चाहे उनका स्थान कोई भी हो या दिन का कोई भी समय हो।"
+
+#: src/pages/About.jsx:11
+msgid "PhD in Agricultural Sciences with 15+ years of experience in crop management and pest control."
+msgstr "कृषि विज्ञान में पीएच.डी. के साथ फसल प्रबंधन और कीट नियंत्रण में 15+ साल का अनुभव।"
+
+#: src/pages/Home.jsx:14
+msgid "Get instant expert advice on pest management, crop planning, and farming techniques using advanced AI technology."
+msgstr "उन्नत AI तकनीक का उपयोग करके कीट प्रबंधन, फसल योजना और कृषि तकनीकों पर तुरंत विशेषज्ञ सलाह प्राप्त करें।"
+
+#: src/pages/Home.jsx:28
+msgid "Reliable Information"
+msgstr "विश्वसनीय जानकारी"
+
+#: src/pages/About.jsx:61
+msgid "We're on a mission to revolutionize agricultural advisory services through AI technology, making expert farming knowledge accessible to every farmer in India."
+msgstr "हम AI तकनीक के माध्यम से कृषि सलाहकार सेवाओं में क्रांति लाने के मिशन पर हैं, भारत के हर किसान के लिए विशेषज्ञ कृषि ज्ञान को सुलभ बनाते हैं।"
+
+#: src/components/layout/Navbar.jsx:82
+msgid "About"
+msgstr "के बारे में"
+
+#: src/pages/About.jsx:9
+msgid "Agricultural Expert"
+msgstr "कृषि विशेषज्ञ"
+
+#: src/pages/About.jsx:206
+msgid "We leverage cutting-edge AI and machine learning technologies to provide accurate and contextual agricultural advice."
+msgstr "हम सटीक और प्रासंगिक कृषि सलाह प्रदान करने के लिए अत्याधुनिक AI और मशीन लर्निंग तकनीकों का लाभ उठाते हैं।"
+
+#: src/pages/About.jsx:222
+msgid "Agricultural Knowledge Base"
+msgstr "कृषि ज्ञान आधार"
+
+#: src/pages/About.jsx:23
+msgid "Expert in building scalable web applications with focus on user experience and performance."
+msgstr "उपयोगकर्ता अनुभव और प्रदर्शन पर ध्यान केंद्रित करने के साथ स्केलेबल वेब एप्लिकेशन बनाने में विशेषज्ञ।"
+
+#: src/pages/About.jsx:102
+#: src/pages/Home.jsx:45
+msgid "Questions Answered"
+msgstr "प्रश्नों के उत्तर"

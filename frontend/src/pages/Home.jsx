@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, MessageCircle, Users, Clock, Shield, Zap, Globe } from 'lucide-react';
+import { Trans, t } from '@lingui/macro';
 import { useAuth } from '../context/AuthContext';
 import Footer from '../components/layout/Footer';
 
@@ -9,41 +10,41 @@ const Home = () => {
   const features = [
     {
       icon: MessageCircle,
-      title: 'AI-Powered Advisory',
-      description: 'Get instant expert advice on pest management, crop planning, and farming techniques using advanced AI technology.'
+      title: t`AI-Powered Advisory`,
+      description: t`Get instant expert advice on pest management, crop planning, and farming techniques using advanced AI technology.`
     },
     {
       icon: Users,
-      title: 'Expert Network',
-      description: 'Connect with agricultural experts and extension officers when you need specialized guidance.'
+      title: t`Expert Network`,
+      description: t`Connect with agricultural experts and extension officers when you need specialized guidance.`
     },
     {
       icon: Clock,
-      title: '24/7 Availability',
-      description: 'Access farming advice anytime, anywhere. Our AI assistant is always ready to help.'
+      title: t`24/7 Availability`,
+      description: t`Access farming advice anytime, anywhere. Our AI assistant is always ready to help.`
     },
     {
       icon: Shield,
-      title: 'Reliable Information',
-      description: 'Get accurate, verified information from trusted agricultural sources and research institutes.'
+      title: t`Reliable Information`,
+      description: t`Get accurate, verified information from trusted agricultural sources and research institutes.`
     },
     {
       icon: Zap,
-      title: 'Quick Responses',
-      description: 'Receive instant answers to your farming questions with our fast AI processing.'
+      title: t`Quick Responses`,
+      description: t`Receive instant answers to your farming questions with our fast AI processing.`
     },
     {
       icon: Globe,
-      title: 'Malayalam Support',
-      description: 'Communicate in your native language with full Malayalam language support.'
+      title: t`Malayalam Support`,
+      description: t`Communicate in your native language with full Malayalam language support.`
     }
   ];
 
   const stats = [
-    { number: '10,000+', label: 'Farmers Helped' },
-    { number: '50,000+', label: 'Questions Answered' },
-    { number: '24/7', label: 'Support Available' },
-    { number: '99%', label: 'Satisfaction Rate' }
+    { number: '10,000+', label: t`Farmers Helped` },
+    { number: '50,000+', label: t`Questions Answered` },
+    { number: '24/7', label: t`Support Available` },
+    { number: '99%', label: t`Satisfaction Rate` }
   ];
 
   return (
@@ -53,37 +54,36 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              Your Digital
-              <span className="text-green-600 dark:text-green-400"> Krishi Officer</span>
+              <Trans>Your Digital</Trans>
+              <span className="text-green-600 dark:text-green-400"> <Trans>Krishi Officer</Trans></span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              AI-powered agricultural advisory system providing expert guidance on farming, 
-              pest management, weather decisions, and government schemes.
+              <Trans>AI-powered agricultural advisory system providing expert guidance on farming, pest management, weather decisions, and government schemes.</Trans>
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {isAuthenticated ? (
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-200"
-                >
-                  Go to Dashboard
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Link>
-              ) : (
-                <>
                   <Link
-                    to="/signup"
+                    to="/dashboard"
                     className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-200"
                   >
-                    Get Started
+                    <Trans>Go to Dashboard</Trans>
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Link>
-                  <Link
-                    to="/login"
-                    className="inline-flex items-center px-8 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-                  >
-                    Sign In
-                  </Link>
+              ) : (
+                <>
+                    <Link
+                      to="/signup"
+                      className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-200"
+                    >
+                      <Trans>Get Started</Trans>
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </Link>
+                    <Link
+                      to="/login"
+                      className="inline-flex items-center px-8 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                    >
+                      <Trans>Sign In</Trans>
+                    </Link>
                 </>
               )}
             </div>
@@ -114,11 +114,10 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Why Choose Digital Krishi Officer?
+              <Trans>Why Choose Digital Krishi Officer?</Trans>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Our AI-powered platform combines cutting-edge technology with agricultural expertise 
-              to provide farmers with the best possible guidance.
+              <Trans>Our AI-powered platform combines cutting-edge technology with agricultural expertise to provide farmers with the best possible guidance.</Trans>
             </p>
           </div>
           
@@ -148,10 +147,10 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              How It Works
+              <Trans>How It Works</Trans>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Getting expert agricultural advice has never been easier. Follow these simple steps.
+              <Trans>Getting expert agricultural advice has never been easier. Follow these simple steps.</Trans>
             </p>
           </div>
           
@@ -161,10 +160,10 @@ const Home = () => {
                 <span className="text-2xl font-bold text-green-600 dark:text-green-400">1</span>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Sign Up
+                <Trans>Sign Up</Trans>
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Create your account and set up your farming profile with crop types and location.
+                <Trans>Create your account and set up your farming profile with crop types and location.</Trans>
               </p>
             </div>
             
@@ -173,10 +172,10 @@ const Home = () => {
                 <span className="text-2xl font-bold text-green-600 dark:text-green-400">2</span>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Ask Questions
+                <Trans>Ask Questions</Trans>
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Ask your farming questions in text or voice, upload images of crops or pests.
+                <Trans>Ask your farming questions in text or voice, upload images of crops or pests.</Trans>
               </p>
             </div>
             
@@ -185,10 +184,10 @@ const Home = () => {
                 <span className="text-2xl font-bold text-green-600 dark:text-green-400">3</span>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Get Expert Advice
+                <Trans>Get Expert Advice</Trans>
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Receive instant AI-powered advice or connect with agricultural experts for complex issues.
+                <Trans>Receive instant AI-powered advice or connect with agricultural experts for complex issues.</Trans>
               </p>
             </div>
           </div>
@@ -199,20 +198,19 @@ const Home = () => {
       <section className="py-20 bg-green-600 dark:bg-green-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to Transform Your Farming?
+            <Trans>Ready to Transform Your Farming?</Trans>
           </h2>
           <p className="text-xl text-green-100 mb-8 max-w-3xl mx-auto">
-            Join thousands of farmers who are already using Digital Krishi Officer 
-            to improve their farming practices and increase their yields.
+            <Trans>Join thousands of farmers who are already using Digital Krishi Officer to improve their farming practices and increase their yields.</Trans>
           </p>
           {!isAuthenticated && (
-            <Link
-              to="/signup"
-              className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-green-600 bg-white hover:bg-gray-50 transition-colors duration-200"
-            >
-              Start Your Journey
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Link>
+              <Link
+                to="/signup"
+                className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-green-600 bg-white hover:bg-gray-50 transition-colors duration-200"
+              >
+                <Trans>Start Your Journey</Trans>
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Link>
           )}
         </div>
       </section>
