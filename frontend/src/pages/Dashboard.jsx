@@ -32,6 +32,9 @@ const Dashboard = () => {
     selectThread,
     updateThread,
     deleteThread,
+    loadThreads,
+    pagination,
+    messageCache,
     isLoading: chatLoading,
   } = useChat();
 
@@ -332,9 +335,17 @@ const Dashboard = () => {
                   ) : (
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                          {thread.title}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            {thread.title}
+                          </h3>
+                          {messageCache[thread._id] && (
+                            <div
+                              className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"
+                              title="Messages cached for faster loading"
+                            />
+                          )}
+                        </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           {getCategoryLabel(thread.category)}
                         </p>
@@ -411,6 +422,18 @@ const Dashboard = () => {
                   )}
                 </div>
               ))}
+
+              {/* Load More Button */}
+              {!chatLoading && pagination && pagination.page < pagination.pages && (
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => loadThreads({ page: pagination.page + 1, append: true })}
+                    className="w-full px-4 py-2 text-sm text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                  >
+                    Load More ({pagination.total - (pagination.page * pagination.limit)} remaining)
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

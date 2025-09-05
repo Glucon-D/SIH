@@ -1,9 +1,11 @@
 import { apiService } from "./api";
+import { localSyncService } from "./localSync";
 
 export const chatService = {
-  // Get threads
+  // Get threads with local caching
   getThreads: async (filters = {}) => {
     try {
+      // For now, fetch directly from server (caching can be re-enabled later)
       const params = new URLSearchParams();
 
       Object.keys(filters).forEach((key) => {
@@ -23,6 +25,12 @@ export const chatService = {
   createThread: async (threadData) => {
     try {
       const response = await apiService.post("/threads", threadData);
+
+      // Update cache with new thread
+      if (response.data.success && response.data.data.thread) {
+        await localSyncService.updateCachedThread(response.data.data.thread);
+      }
+
       return response.data;
     } catch (error) {
       throw error;
@@ -43,6 +51,12 @@ export const chatService = {
   updateThread: async (threadId, updateData) => {
     try {
       const response = await apiService.put(`/threads/${threadId}`, updateData);
+
+      // Update cache with modified thread
+      if (response.data.success && response.data.data.thread) {
+        await localSyncService.updateCachedThread(response.data.data.thread);
+      }
+
       return response.data;
     } catch (error) {
       throw error;
@@ -53,15 +67,41 @@ export const chatService = {
   deleteThread: async (threadId) => {
     try {
       const response = await apiService.delete(`/threads/${threadId}`);
+
+      // Remove from cache
+      if (response.data.success) {
+        await localSyncService.removeCachedThread(threadId);
+      }
+
       return response.data;
     } catch (error) {
       throw error;
     }
   },
 
-  // Get chat history
+  // Get chat history with local caching
   getChatHistory: async (threadId, options = {}) => {
     try {
+      const page = parseInt(options.page) || 1;
+      const limit = parseInt(options.limit) || 50;
+
+      // Check if we have fresh cached messages
+      const isCacheFresh = await localSyncService.isMessagesCacheFresh(threadId);
+
+      if (isCacheFresh) {
+        console.log(`Using cached messages for thread ${threadId}`);
+        const cachedResult = await localSyncService.getCachedMessages(threadId, page, limit);
+        if (cachedResult.fromCache && cachedResult.messages.length > 0) {
+          return {
+            success: true,
+            data: cachedResult,
+            fromCache: true
+          };
+        }
+      }
+
+      // Fetch from server
+      console.log(`Fetching messages from server for thread ${threadId}`);
       const params = new URLSearchParams();
 
       if (options.page) params.append("page", options.page);
@@ -70,8 +110,30 @@ export const chatService = {
       const response = await apiService.get(
         `/chat/history/${threadId}?${params.toString()}`
       );
+
+      // Cache the response
+      if (response.data.success && response.data.data.messages) {
+        await localSyncService.cacheMessages(threadId, response.data.data.messages);
+      }
+
       return response.data;
     } catch (error) {
+      // If server fails, try to return cached data as fallback
+      try {
+        console.log(`Server failed, attempting to use cached messages for thread ${threadId}`);
+        const cachedResult = await localSyncService.getCachedMessages(threadId, page, limit);
+        if (cachedResult.fromCache && cachedResult.messages.length > 0) {
+          return {
+            success: true,
+            data: cachedResult,
+            fromCache: true,
+            offline: true
+          };
+        }
+      } catch (cacheError) {
+        console.error('Message cache fallback also failed:', cacheError);
+      }
+
       throw error;
     }
   },
@@ -215,6 +277,53 @@ export const chatService = {
       return response.data;
     } catch (error) {
       console.error("Transcription error:", error);
+      throw error;
+    }
+  },
+
+  // Cache management methods
+  clearCache: async () => {
+    try {
+      await localSyncService.clearCache();
+      console.log('Chat cache cleared successfully');
+    } catch (error) {
+      console.error('Failed to clear chat cache:', error);
+      throw error;
+    }
+  },
+
+  getCacheStats: async () => {
+    try {
+      return await localSyncService.getCacheStats();
+    } catch (error) {
+      console.error('Failed to get cache stats:', error);
+      return { threads: 0, messages: 0, isInitialized: false };
+    }
+  },
+
+  // Force refresh from server (bypass cache)
+  forceRefreshThreads: async (filters = {}) => {
+    try {
+      const params = new URLSearchParams();
+
+      Object.keys(filters).forEach((key) => {
+        if (filters[key] !== undefined && filters[key] !== null) {
+          params.append(key, filters[key]);
+        }
+      });
+
+      const response = await apiService.get(`/threads?${params.toString()}`);
+
+      // Update cache with fresh data
+      if (response.data.success && response.data.data.threads) {
+        const userId = JSON.parse(localStorage.getItem('dko_user'))?.id;
+        if (userId) {
+          await localSyncService.cacheThreads(response.data.data.threads, userId);
+        }
+      }
+
+      return response.data;
+    } catch (error) {
       throw error;
     }
   },

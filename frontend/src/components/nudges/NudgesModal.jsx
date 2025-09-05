@@ -136,26 +136,65 @@ const NudgesModal = ({ isOpen, onClose }) => {
                     Location:
                   </label>
                   {!location ? (
-                    <button
-                      onClick={handleGetLocation}
-                      disabled={isLoadingLocation}
-                      className="flex items-center space-x-2 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors disabled:opacity-50"
-                    >
-                      {isLoadingLocation ? (
-                        <Loader className="w-5 h-5 animate-spin text-blue-600" />
-                      ) : (
-                        <MapPin className="w-5 h-5 text-blue-600" />
+                    <div className="space-y-2">
+                      <button
+                        onClick={handleGetLocation}
+                        disabled={isLoadingLocation}
+                        className="flex items-center space-x-2 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors disabled:opacity-50 w-full"
+                      >
+                        {isLoadingLocation ? (
+                          <Loader className="w-5 h-5 animate-spin text-blue-600" />
+                        ) : (
+                          <MapPin className="w-5 h-5 text-blue-600" />
+                        )}
+                        <span className="text-blue-700 dark:text-blue-300">
+                          {isLoadingLocation ? 'Getting location...' : 'Get my location'}
+                        </span>
+                      </button>
+
+                      {nudgesService.isLocationAccessDenied() && (
+                        <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-xl">
+                          <div className="flex items-center space-x-2">
+                            <AlertCircle className="w-4 h-4 text-yellow-600" />
+                            <span className="text-sm text-yellow-700 dark:text-yellow-300">
+                              GPS access was denied. Using IP-based location.
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              nudgesService.resetLocationPreferences();
+                              handleGetLocation();
+                            }}
+                            className="text-xs text-yellow-600 hover:text-yellow-800 underline"
+                          >
+                            Retry GPS
+                          </button>
+                        </div>
                       )}
-                      <span className="text-blue-700 dark:text-blue-300">
-                        {isLoadingLocation ? 'Getting location...' : 'Get my location'}
-                      </span>
-                    </button>
+                    </div>
                   ) : (
-                    <div className="flex items-center space-x-2 px-4 py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl">
-                      <MapPin className="w-5 h-5 text-green-600" />
-                      <span className="text-green-700 dark:text-green-300">
-                        Location obtained ({location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)})
-                      </span>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between px-4 py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl">
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="w-5 h-5 text-green-600" />
+                          <span className="text-green-700 dark:text-green-300">
+                            Location obtained ({location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)})
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setLocation(null)}
+                          className="text-xs text-green-600 hover:text-green-800 underline"
+                        >
+                          Change
+                        </button>
+                      </div>
+
+                      {location.coords.source && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400 px-2">
+                          Source: {location.coords.source === 'gps' ? 'GPS' : 'IP Address'}
+                          {location.coords.accuracy && ` • Accuracy: ~${Math.round(location.coords.accuracy)}m`}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

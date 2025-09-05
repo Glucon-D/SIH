@@ -33,12 +33,39 @@ export const nudgesService = {
       console.log("Starting geolocation request...");
 
       if (!navigator.geolocation) {
-        console.error("Geolocation not supported");
-        reject(new Error("Geolocation is not supported by this browser"));
+        console.error("Geolocation not supported, falling back to IP location");
+        nudgesService.getLocationFromIP().then(resolve).catch(reject);
         return;
       }
 
       console.log("Geolocation is supported, requesting position...");
+
+      // Check if user previously denied location access
+      const locationDenied = localStorage.getItem('location_access_denied');
+      if (locationDenied === 'true') {
+        console.log("Location access previously denied, using IP location");
+        nudgesService.getLocationFromIP().then(resolve).catch(reject);
+        return;
+      }
+
+      // Fallback to IP-based location
+      const fallbackToIP = (reason) => {
+        console.log(`Falling back to IP location: ${reason}`);
+        nudgesService
+          .getLocationFromIP()
+          .then((ipLocation) => {
+            console.log("IP-based location successful:", ipLocation);
+            resolve(ipLocation);
+          })
+          .catch((ipError) => {
+            console.error("IP-based location also failed:", ipError);
+            reject(
+              new Error(
+                `Location services are unavailable. ${reason}. Please enable location services or try again later.`
+              )
+            );
+          });
+      };
 
       // First attempt with permissive settings
       const attemptGeolocation = (options, attemptNumber = 1) => {
@@ -51,7 +78,14 @@ export const nudgesService = {
           (position) => {
             console.log("Geolocation success:", position);
             const { latitude, longitude } = position.coords;
-            resolve({ latitude, longitude });
+            // Clear any previous denial flag on success
+            localStorage.removeItem('location_access_denied');
+            resolve({
+              latitude,
+              longitude,
+              accuracy: position.coords.accuracy,
+              source: 'gps'
+            });
           },
           (error) => {
             console.error(`Geolocation attempt ${attemptNumber} failed:`, {
@@ -62,52 +96,35 @@ export const nudgesService = {
               TIMEOUT: error.TIMEOUT,
             });
 
-            // If first attempt fails and it's not a permission issue, try with different settings
-            if (attemptNumber === 1 && error.code !== error.PERMISSION_DENIED) {
+            // Handle permission denied - remember this choice
+            if (error.code === error.PERMISSION_DENIED) {
+              localStorage.setItem('location_access_denied', 'true');
+              fallbackToIP("Location access denied by user");
+              return;
+            }
+
+            // If first attempt fails with non-permission error, try with different settings
+            if (attemptNumber === 1) {
               console.log("Trying fallback geolocation settings...");
               attemptGeolocation(
                 {
-                  enableHighAccuracy: true,
-                  timeout: 60000,
-                  maximumAge: 0,
+                  enableHighAccuracy: false, // Less accurate but faster
+                  timeout: 45000,
+                  maximumAge: 300000, // 5 minutes
                 },
                 2
               );
               return;
             }
 
-            // If second attempt also fails, try IP-based location as last resort
-            if (error.code === error.POSITION_UNAVAILABLE) {
-              console.log("GPS failed, trying IP-based location...");
-              nudgesService
-                .getLocationFromIP()
-                .then(resolve)
-                .catch((ipError) => {
-                  console.error("IP-based location also failed:", ipError);
-                  reject(
-                    new Error(
-                      `Location services are unavailable (Code: ${error.code}). Please enable location services in macOS Settings → Privacy & Security → Location Services, or try again later.`
-                    )
-                  );
-                });
-              return;
-            }
+            // Second attempt failed - fall back to IP location for any error
+            const errorMessages = {
+              [error.POSITION_UNAVAILABLE]: "GPS position unavailable",
+              [error.TIMEOUT]: "Location request timed out",
+            };
 
-            // For other errors, give up immediately
-            let errorMessage = "Unable to retrieve location";
-
-            switch (error.code) {
-              case error.PERMISSION_DENIED:
-                errorMessage = `Location access denied (Code: ${error.code}). Please allow location access in your browser settings and try again.`;
-                break;
-              case error.TIMEOUT:
-                errorMessage = `Location request timed out (Code: ${error.code}). Please try again.`;
-                break;
-              default:
-                errorMessage = `Location access failed (Code: ${error.code}). Error: ${error.message}`;
-            }
-
-            reject(new Error(errorMessage));
+            const reason = errorMessages[error.code] || `Location error (Code: ${error.code})`;
+            fallbackToIP(reason);
           },
           options
         );
@@ -116,8 +133,8 @@ export const nudgesService = {
       // Start with permissive settings
       attemptGeolocation({
         enableHighAccuracy: false,
-        timeout: 30000,
-        maximumAge: 900000,
+        timeout: 20000, // Reduced timeout for faster fallback
+        maximumAge: 600000, // 10 minutes
       });
     });
   },
@@ -126,25 +143,63 @@ export const nudgesService = {
   getLocationFromIP: async () => {
     try {
       console.log("Attempting IP-based location...");
-      const response = await fetch("https://ipapi.co/json/");
-      const data = await response.json();
 
-      if (data.latitude && data.longitude) {
-        console.log("IP-based location success:", data);
-        return {
-          latitude: data.latitude,
-          longitude: data.longitude,
-          city: data.city,
-          region: data.region,
-          country: data.country_name,
-        };
-      } else {
-        throw new Error("No location data from IP service");
+      // Try multiple IP geolocation services for better reliability
+      const services = [
+        { url: "https://ipapi.co/json/", name: "ipapi.co" },
+        { url: "https://ip-api.com/json/", name: "ip-api.com" },
+      ];
+
+      for (const service of services) {
+        try {
+          console.log(`Trying ${service.name}...`);
+          const response = await fetch(service.url, { timeout: 10000 });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          // Handle different response formats
+          const latitude = data.latitude || data.lat;
+          const longitude = data.longitude || data.lon;
+
+          if (latitude && longitude) {
+            console.log(`IP-based location success via ${service.name}:`, data);
+            return {
+              latitude: parseFloat(latitude),
+              longitude: parseFloat(longitude),
+              city: data.city,
+              region: data.region || data.regionName,
+              country: data.country_name || data.country,
+              source: 'ip',
+              accuracy: 50000, // IP-based location is less accurate
+              provider: service.name
+            };
+          }
+        } catch (serviceError) {
+          console.warn(`${service.name} failed:`, serviceError.message);
+          continue; // Try next service
+        }
       }
+
+      throw new Error("All IP geolocation services failed");
     } catch (error) {
       console.error("IP-based location failed:", error);
       throw new Error("Unable to determine location from IP address");
     }
+  },
+
+  // Reset location preferences (allow user to retry GPS)
+  resetLocationPreferences: () => {
+    localStorage.removeItem('location_access_denied');
+    console.log("Location preferences reset - GPS will be attempted again");
+  },
+
+  // Check if location access was previously denied
+  isLocationAccessDenied: () => {
+    return localStorage.getItem('location_access_denied') === 'true';
   },
 
   // Convert coordinates to location string for API
