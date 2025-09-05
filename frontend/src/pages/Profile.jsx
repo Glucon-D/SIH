@@ -19,15 +19,16 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
-import { authService } from "../services/auth";
+import { nudgesService } from "../services/nudges";
 import toast from "react-hot-toast";
 
 const Profile = () => {
-  const { isAuthenticated, isLoading, user, updateUser } = useAuth();
+  const { isAuthenticated, isLoading, user, updateProfile: updateUserProfile } = useAuth();
   const { setLoading } = useApp();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     profile: {
@@ -119,14 +120,14 @@ const Profile = () => {
     try {
       setIsSaving(true);
 
-      const response = await authService.updateProfile(formData);
+      // Use the AuthContext updateProfile function which handles everything
+      const result = await updateUserProfile(formData);
 
-      if (response.success) {
-        updateUser(response.data.user);
+      if (result.success) {
         setIsEditing(false);
-        toast.success("Profile updated successfully!");
+        // Success toast is already shown by AuthContext
       } else {
-        throw new Error(response.message || "Failed to update profile");
+        throw new Error(result.error || "Failed to update profile");
       }
     } catch (error) {
       console.error("Profile update error:", error);
@@ -186,6 +187,25 @@ const Profile = () => {
       return firstName;
     }
     return user?.username || "User";
+  };
+
+  const handleGetCurrentLocation = async () => {
+    setIsLoadingLocation(true);
+
+    try {
+      const coords = await nudgesService.getCurrentLocation();
+      const locationString = await nudgesService.coordinatesToLocationString(
+        coords.latitude,
+        coords.longitude
+      );
+
+      handleInputChange("profile", "location", locationString);
+      toast.success("Location updated successfully!");
+    } catch (error) {
+      toast.error(error.message || "Failed to get current location");
+    } finally {
+      setIsLoadingLocation(false);
+    }
   };
 
   if (isLoading) {
@@ -359,16 +379,40 @@ const Profile = () => {
                     <MapPin className="w-4 h-4 inline mr-1" />
                     Location
                   </label>
-                  <input
-                    type="text"
-                    value={formData.profile.location}
-                    onChange={(e) =>
-                      handleInputChange("profile", "location", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50 disabled:dark:bg-gray-700 disabled:cursor-not-allowed"
-                    placeholder="Enter your farm location"
-                  />
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={formData.profile.location}
+                      onChange={(e) =>
+                        handleInputChange("profile", "location", e.target.value)
+                      }
+                      disabled={!isEditing}
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50 disabled:dark:bg-gray-700 disabled:cursor-not-allowed"
+                      placeholder="Enter your farm location"
+                    />
+                    {isEditing && (
+                      <button
+                        type="button"
+                        onClick={handleGetCurrentLocation}
+                        disabled={isLoadingLocation}
+                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm rounded-lg transition-colors flex items-center space-x-1"
+                      >
+                        {isLoadingLocation ? (
+                          <Loader className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <MapPin className="w-4 h-4" />
+                        )}
+                        <span className="hidden sm:inline">
+                          {isLoadingLocation ? "Getting..." : "Current"}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                  {isEditing && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Click "Current" to automatically detect your location
+                    </p>
+                  )}
                 </div>
 
                 {/* Farm Size */}

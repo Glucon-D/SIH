@@ -16,9 +16,9 @@ const MarkdownRenderer = ({ content, className = "" }) => {
           ),
           li: ({ children }) => <li className="ml-2">{children}</li>,
           strong: ({ children }) => (
-            <strong className="font-semibold">{children}</strong>
+            <strong className="font-bold text-green-700 dark:text-green-300">{children}</strong>
           ),
-          em: ({ children }) => <em className="italic">{children}</em>,
+          em: ({ children }) => <em className="italic text-blue-600 dark:text-blue-400">{children}</em>,
           h1: ({ children }) => (
             <h1 className="text-lg font-bold mb-2 mt-3 first:mt-0">
               {children}

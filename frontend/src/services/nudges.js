@@ -2,14 +2,15 @@ import { apiService } from "./api";
 
 export const nudgesService = {
   // Get AI-generated nudges based on crop and location
-  getNudges: async (crop, location) => {
+  getNudges: async (crop, location, language = 'en') => {
     try {
-      console.log("🚀 Making nudges API request with:", { crop, location });
+      console.log("🚀 Making nudges API request with:", { crop, location, language });
 
       const response = await apiService.get("/nudges", {
         params: {
           crop,
           location,
+          language,
         },
       });
 

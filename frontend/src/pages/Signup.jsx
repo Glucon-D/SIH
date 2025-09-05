@@ -3,10 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, Mail, Lock, User, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import OnboardingModal from '../components/onboarding/OnboardingModal';
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const { register: registerUser, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -20,12 +22,12 @@ const Signup = () => {
 
   const password = watch('password');
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (but not if showing onboarding)
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
+    if (isAuthenticated && !isLoading && !showOnboarding) {
       navigate('/dashboard', { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, showOnboarding]);
 
   const onSubmit = async (data) => {
     try {
@@ -40,7 +42,8 @@ const Signup = () => {
       });
 
       if (result.success) {
-        navigate('/dashboard', { replace: true });
+        // Show onboarding modal instead of navigating directly
+        setShowOnboarding(true);
       } else {
         setError('root', {
           type: 'manual',
@@ -55,6 +58,16 @@ const Signup = () => {
     }
   };
 
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    navigate('/dashboard', { replace: true });
+  };
+
+  const handleOnboardingClose = () => {
+    setShowOnboarding(false);
+    navigate('/dashboard', { replace: true });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -67,6 +80,7 @@ const Signup = () => {
   }
 
   return (
+    <>
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-green-900/20 dark:to-gray-900 py-6 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md">
@@ -353,6 +367,14 @@ const Signup = () => {
     </div>
   </div>
 </div>
+
+      {/* Onboarding Modal */}
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={handleOnboardingClose}
+        onComplete={handleOnboardingComplete}
+      />
+    </>
   );
 };
 
