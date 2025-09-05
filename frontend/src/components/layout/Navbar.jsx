@@ -13,9 +13,11 @@ import {
   Zap,
   User,
 } from "lucide-react";
+import { Trans, t } from '@lingui/macro';
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import NudgesModal from "../nudges/NudgesModal";
+import LanguageSelector from "../LanguageSelector";
 import { ChevronRight } from "lucide-react";
 
 const Navbar = () => {
@@ -76,10 +78,10 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { path: "/", label: "Home", public: true },
-    { path: "/about", label: "About", public: true },
-    { path: "/contact", label: "Contact", public: true },
-    { path: "/dashboard", label: "Dashboard", public: false },
+    { path: "/", label: t`Home`, public: true },
+    { path: "/about", label: t`About`, public: true },
+    { path: "/contact", label: t`Contact`, public: true },
+    { path: "/dashboard", label: t`Dashboard`, public: false },
   ];
 
   return (
@@ -144,6 +146,11 @@ const Navbar = () => {
 
             {/* Right Section - Actions */}
             <div className="flex items-center justify-end space-x-3 lg:w-1/3">
+              {/* Language Selector */}
+              <div className="hidden sm:block">
+                <LanguageSelector />
+              </div>
+
               {/* Modern Theme toggle - Hidden on mobile to save space */}
               <button
                 onClick={toggleTheme}
@@ -436,6 +443,11 @@ const Navbar = () => {
                     })}
                   </div>
                 )}
+
+                {/* Mobile Language Selector */}
+                <div className="px-4 mb-2">
+                  <LanguageSelector />
+                </div>
 
                 {/* Modern Mobile theme toggle */}
                 <button
