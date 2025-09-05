@@ -12,6 +12,7 @@ import {
   ChevronUp,
   Zap,
   User,
+  ChevronDown,
 } from "lucide-react";
 import { t } from "@lingui/macro";
 import { useAuth } from "../../context/AuthContext";
@@ -148,7 +149,7 @@ const Navbar = () => {
             {/* Right Section - Actions */}
             <div className="flex items-center justify-end space-x-3 lg:w-1/3">
               {/* Language Selector */}
-              <div className="hidden sm:block">
+              <div className="hidden shrink-0  sm:block">
                 <LanguageSelector />
               </div>
 
@@ -160,10 +161,10 @@ const Navbar = () => {
               {/* Modern Theme toggle - Hidden on mobile to save space */}
               <button
                 onClick={toggleTheme}
-                className="hidden sm:flex relative p-3 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 bg-gray-100/60 dark:bg-gray-800/60 hover:bg-gray-200/80 dark:hover:bg-gray-700/80 transition-all duration-300 group overflow-hidden backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50"
+                className="hidden sm:flex shrink-0 relative p-3 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 bg-gray-100/60 dark:bg-gray-800/60 hover:bg-gray-200/80 dark:hover:bg-gray-700/80 transition-all duration-300 group overflow-hidden backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50"
                 aria-label="Toggle theme"
               >
-                <div className="relative z-10 transform group-hover:scale-110 transition-transform duration-300">
+                <div className="relative z-10 shrink-0 transform group-hover:scale-110 transition-transform duration-300">
                   {effectiveTheme === "dark" ? (
                     <Sun className="w-5 h-5 rotate-0 group-hover:rotate-180 transition-transform duration-500 text-yellow-500" />
                   ) : (
@@ -178,7 +179,7 @@ const Navbar = () => {
               {isAuthenticated && (
                 <button
                   onClick={handleAINudges}
-                  className="hidden sm:flex relative p-3 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 bg-gradient-to-br from-green-100/60 to-blue-100/60 dark:from-green-900/30 dark:to-blue-900/30 hover:from-green-200/80 hover:to-blue-200/80 dark:hover:from-green-800/50 dark:hover:to-blue-800/50 transition-all duration-300 group overflow-hidden backdrop-blur-xl border border-green-200/50 dark:border-green-700/50"
+                  className="hidden sm:flex relative p-3 shrink-0 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 bg-gradient-to-br from-green-100/60 to-blue-100/60 dark:from-green-900/30 dark:to-blue-900/30 hover:from-green-200/80 hover:to-blue-200/80 dark:hover:from-green-800/50 dark:hover:to-blue-800/50 transition-all duration-300 group overflow-hidden backdrop-blur-xl border border-green-200/50 dark:border-green-700/50"
                   aria-label="Get AI farming nudges"
                   title="Get AI farming nudges based on your location and weather"
                 >
@@ -195,7 +196,7 @@ const Navbar = () => {
                 <div className="hidden lg:block relative" ref={profileMenuRef}>
                   <button
                     onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                    className="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-100/70 dark:hover:bg-gray-800/70 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 group"
+                    className="flex items-center shrink-0 space-x-3 p-2 rounded-xl hover:bg-gray-100/70 dark:hover:bg-gray-800/70 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-transparent focus:ring-offset-2 dark:focus:ring-offset-gray-900 group"
                   >
                     {/* Enhanced Avatar with Online Status */}
                     <div className="relative">
@@ -229,15 +230,12 @@ const Navbar = () => {
                           const lastName = user?.profile?.lastName || "";
 
                           if (firstName && lastName) {
-                            return `${firstName} ${lastName}`;
+                            return `${firstName} `;
                           } else if (firstName) {
                             return firstName;
                           }
                           return user?.username || "User";
                         })()}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Online
                       </p>
                     </div>
 
@@ -245,13 +243,13 @@ const Navbar = () => {
                     <div className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 outline-none focus:ring-0 focus:outline-none transition-colors duration-200">
                       <div
                         className={`transform transition-transform duration-200 ${
-                          isProfileMenuOpen ? "rotate-180" : ""
+                          isProfileMenuOpen ? "-rotate-180" : ""
                         }`}
                       >
                         {isProfileMenuOpen ? (
-                          <ChevronUp className="w-4 h-4" />
+                          <ChevronDown className="w-4 h-4" />
                         ) : (
-                          <ChevronRight className="w-4 h-4" />
+                          <ChevronDown className="w-4 h-4" />
                         )}
                       </div>
                     </div>

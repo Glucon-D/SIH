@@ -16,16 +16,17 @@ const buildPersonalizedSystemPrompt = (user) => {
   const languageInstructions = {
     en: "Respond in English.",
     hi: "Respond in Hindi (हिंदी). Use Devanagari script and include English terms in parentheses for technical words when needed.",
-    ml: "Respond in Malayalam (മലയാളം). Use Malayalam script and include English terms in parentheses for technical words when needed."
+    ml: "Respond in Malayalam (മലയാളം). Use Malayalam script and include English terms in parentheses for technical words when needed.",
   };
 
-  const userLanguage = preferences.language || 'en';
-  const languageInstruction = languageInstructions[userLanguage] || languageInstructions.en;
+  const userLanguage = preferences.language || "en";
+  const languageInstruction =
+    languageInstructions[userLanguage] || languageInstructions.en;
 
   // Base system prompt
   let systemPrompt = `You are a Digital Krishi Officer, an AI-powered agricultural advisory assistant designed to help farmers with personalized advice. You provide expert guidance on:
 
-🌐 LANGUAGE: ${languageInstruction}
+🌐 LANGUAGE: Strictly use the language in which the user is communicating.
 
 🌾 CORE EXPERTISE:
 - Pest and disease management with specific treatment recommendations
@@ -57,7 +58,9 @@ const buildPersonalizedSystemPrompt = (user) => {
 
   // Add user-specific context if available
   if (profile.firstName || profile.lastName) {
-    const name = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
+    const name = [profile.firstName, profile.lastName]
+      .filter(Boolean)
+      .join(" ");
     systemPrompt += `\n\n👤 USER CONTEXT:\nYou are assisting ${name}, a farmer`;
   } else {
     systemPrompt += `\n\n👤 USER CONTEXT:\nYou are assisting a farmer`;
@@ -66,9 +69,12 @@ const buildPersonalizedSystemPrompt = (user) => {
   // Add experience level context
   if (profile.experience) {
     const experienceContext = {
-      beginner: "who is new to farming. Provide detailed explanations, basic concepts, and step-by-step guidance. Avoid complex technical jargon and focus on fundamental practices.",
-      intermediate: "with moderate farming experience. Provide balanced advice with some technical details and intermediate-level techniques. Include both traditional and modern approaches.",
-      advanced: "with extensive farming experience. Provide advanced technical guidance, latest research findings, and sophisticated farming techniques. You can use technical terminology and discuss complex agricultural concepts."
+      beginner:
+        "who is new to farming. Provide detailed explanations, basic concepts, and step-by-step guidance. Avoid complex technical jargon and focus on fundamental practices.",
+      intermediate:
+        "with moderate farming experience. Provide balanced advice with some technical details and intermediate-level techniques. Include both traditional and modern approaches.",
+      advanced:
+        "with extensive farming experience. Provide advanced technical guidance, latest research findings, and sophisticated farming techniques. You can use technical terminology and discuss complex agricultural concepts.",
     };
     systemPrompt += ` ${experienceContext[profile.experience]}`;
   }
@@ -80,7 +86,7 @@ const buildPersonalizedSystemPrompt = (user) => {
 
   // Add crop-specific context
   if (profile.cropTypes && profile.cropTypes.length > 0) {
-    systemPrompt += `\n\n🌱 CROPS: The farmer primarily grows: ${profile.cropTypes.join(', ')}. Tailor your advice specifically for these crops, including:
+    systemPrompt += `\n\n🌱 CROPS: The farmer primarily grows: ${profile.cropTypes.join(", ")}. Tailor your advice specifically for these crops, including:
 - Crop-specific pest and disease management
 - Optimal planting and harvesting times for these crops
 - Suitable fertilizer and input recommendations
@@ -100,13 +106,13 @@ const buildPersonalizedSystemPrompt = (user) => {
 
   // Add language preference
   const languageMap = {
-    'hi': 'Hindi',
-    'ml': 'Malayalam',
-    'en': 'English'
+    hi: "Hindi",
+    ml: "Malayalam",
+    en: "English",
   };
 
-  if (user.preferences?.language && user.preferences.language !== 'en') {
-    const language = languageMap[user.preferences.language] || 'English';
+  if (user.preferences?.language && user.preferences.language !== "en") {
+    const language = languageMap[user.preferences.language] || "English";
     systemPrompt += `\n\n🗣️ LANGUAGE: The farmer prefers communication in ${language}. While you should respond primarily in English for technical accuracy, you may include local terms and can acknowledge their language preference. If they ask questions in ${language}, respond appropriately.`;
   }
 
@@ -272,7 +278,9 @@ const streamChat = async (req, res) => {
 
     // Get user profile data for personalized responses
     const User = require("../models/User");
-    const user = await User.findById(userId).select('profile preferences username');
+    const user = await User.findById(userId).select(
+      "profile preferences username"
+    );
 
     // Get conversation history
     const conversationHistory = await Message.getConversationHistory(threadId);
@@ -286,7 +294,7 @@ const streamChat = async (req, res) => {
       experience: user?.profile?.experience,
       location: user?.profile?.location,
       cropTypes: user?.profile?.cropTypes?.length || 0,
-      language: user?.preferences?.language
+      language: user?.preferences?.language,
     });
 
     // Prepare messages for AI
@@ -661,39 +669,42 @@ const transcribeAudio = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: "No audio file provided"
+        message: "No audio file provided",
       });
     }
 
     // Initialize OpenAI client
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
+      apiKey: process.env.OPENAI_API_KEY,
     });
 
     // Create a File object from the buffer
-    const audioFile = new File([req.file.buffer], 'audio.webm', {
-      type: req.file.mimetype
+    const audioFile = new File([req.file.buffer], "audio.webm", {
+      type: req.file.mimetype,
     });
 
-    logger.info(`Transcribing audio file: ${req.file.originalname}, size: ${req.file.size} bytes`);
+    logger.info(
+      `Transcribing audio file: ${req.file.originalname}, size: ${req.file.size} bytes`
+    );
 
     // Call Whisper API for transcription
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
       model: "whisper-1",
       // Remove language parameter to enable auto-detection
-      response_format: "verbose_json" // Get detailed response with language detection
+      response_format: "verbose_json", // Get detailed response with language detection
     });
 
-    logger.info(`Transcription completed. Detected language: ${transcription.language}`);
+    logger.info(
+      `Transcription completed. Detected language: ${transcription.language}`
+    );
 
     res.json({
       success: true,
       transcription: transcription.text,
       language: transcription.language,
-      duration: transcription.duration
+      duration: transcription.duration,
     });
-
   } catch (error) {
     logger.error(`Transcription error: ${error.message}`);
 
@@ -701,27 +712,27 @@ const transcribeAudio = async (req, res) => {
     if (error.status === 400) {
       return res.status(400).json({
         success: false,
-        message: "Invalid audio file or format"
+        message: "Invalid audio file or format",
       });
     }
 
     if (error.status === 401) {
       return res.status(500).json({
         success: false,
-        message: "OpenAI API authentication failed"
+        message: "OpenAI API authentication failed",
       });
     }
 
     if (error.status === 413) {
       return res.status(400).json({
         success: false,
-        message: "Audio file too large"
+        message: "Audio file too large",
       });
     }
 
     res.status(500).json({
       success: false,
-      message: "Failed to transcribe audio"
+      message: "Failed to transcribe audio",
     });
   }
 };
