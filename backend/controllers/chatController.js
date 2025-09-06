@@ -7,26 +7,41 @@ const Thread = require("../models/Thread");
 const logger = require("../utils/logger");
 const OpenAI = require("openai");
 
+// Helper function to detect language from user input
+const detectInputLanguage = (text) => {
+  // Simple language detection based on script
+  const hindiPattern = /[\u0900-\u097F]/; // Devanagari script
+  const malayalamPattern = /[\u0D00-\u0D7F]/; // Malayalam script
+  
+  if (hindiPattern.test(text)) {
+    return 'hi';
+  } else if (malayalamPattern.test(text)) {
+    return 'ml';
+  } else {
+    return 'en'; // Default to English
+  }
+};
+
 // Helper function to build personalized system prompt
-const buildPersonalizedSystemPrompt = (user) => {
+const buildPersonalizedSystemPrompt = (user, inputLanguage = 'en') => {
   const profile = user.profile || {};
   const preferences = user.preferences || {};
 
-  // Language mapping
+  // Language mapping based on input language
   const languageInstructions = {
     en: "Respond in English.",
-    hi: "Respond in Hindi (हिंदी). Use Devanagari script and include English terms in parentheses for technical words when needed.",
-    ml: "Respond in Malayalam (മലയാളം). Use Malayalam script and include English terms in parentheses for technical words when needed.",
+    hi: "Respond in Hindi (हिंदी). Use Devanagari script and provide clear, natural Hindi responses. You may include English technical terms in parentheses when absolutely necessary.",
+    ml: "Respond in Malayalam (മലയാളം). Use Malayalam script and provide clear, natural Malayalam responses. You may include English technical terms in parentheses when absolutely necessary.",
   };
 
-  const userLanguage = preferences.language || "en";
-  const languageInstruction =
-    languageInstructions[userLanguage] || languageInstructions.en;
+  // Use detected input language as primary, fallback to user preference, then English
+  const responseLanguage = inputLanguage || preferences.language || "en";
+  const languageInstruction = languageInstructions[responseLanguage] || languageInstructions.en;
 
   // Base system prompt
   let systemPrompt = `You are a Digital Krishi Officer, an AI-powered agricultural advisory assistant designed to help farmers with personalized advice. You provide expert guidance on:
 
-🌐 LANGUAGE: Strictly use the language in which the user is communicating.
+🌐 LANGUAGE: ${languageInstruction} IMPORTANT: Match the language of the user's input message exactly. If they write in English, respond in English. If they write in Hindi, respond in Hindi. If they write in Malayalam, respond in Malayalam.
 
 🌾 CORE EXPERTISE:
 - Pest and disease management with specific treatment recommendations
@@ -104,17 +119,15 @@ const buildPersonalizedSystemPrompt = (user) => {
 - Consider labor requirements and mechanization needs`;
   }
 
-  // Add language preference
+  // Add language context
   const languageMap = {
     hi: "Hindi",
-    ml: "Malayalam",
+    ml: "Malayalam", 
     en: "English",
   };
 
-  if (user.preferences?.language && user.preferences.language !== "en") {
-    const language = languageMap[user.preferences.language] || "English";
-    systemPrompt += `\n\n🗣️ LANGUAGE: The farmer prefers communication in ${language}. While you should respond primarily in English for technical accuracy, you may include local terms and can acknowledge their language preference. If they ask questions in ${language}, respond appropriately.`;
-  }
+  const currentLanguage = languageMap[responseLanguage] || "English";
+  systemPrompt += `\n\n🗣️ LANGUAGE PRIORITY: You are currently responding in ${currentLanguage}. Always match the language of the user's immediate input message. This overrides any stored language preferences.`;
 
   systemPrompt += `\n\n💡 IMPORTANT: Always be encouraging and supportive. Farming can be challenging, so provide hope and practical solutions. If recommending any chemicals or treatments, always mention safety precautions and environmental considerations.`;
 
@@ -282,11 +295,14 @@ const streamChat = async (req, res) => {
       "profile preferences username"
     );
 
+    // Detect language from user input
+    const detectedLanguage = detectInputLanguage(userMessage);
+    
     // Get conversation history
     const conversationHistory = await Message.getConversationHistory(threadId);
 
-    // Build personalized system prompt with user context
-    const systemPrompt = buildPersonalizedSystemPrompt(user || {});
+    // Build personalized system prompt with user context and detected language
+    const systemPrompt = buildPersonalizedSystemPrompt(user || {}, detectedLanguage);
 
     // Log personalized context for debugging
     logger.info(`Personalized chat context for user ${userId}:`, {
@@ -294,7 +310,8 @@ const streamChat = async (req, res) => {
       experience: user?.profile?.experience,
       location: user?.profile?.location,
       cropTypes: user?.profile?.cropTypes?.length || 0,
-      language: user?.preferences?.language,
+      storedLanguage: user?.preferences?.language,
+      detectedLanguage: detectedLanguage,
     });
 
     // Prepare messages for AI
